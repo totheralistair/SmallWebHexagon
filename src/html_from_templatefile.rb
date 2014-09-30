@@ -1,5 +1,4 @@
 
-require 'logger'
 require 'erb'
 require 'erubis'
 

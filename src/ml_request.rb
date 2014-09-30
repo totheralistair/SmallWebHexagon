@@ -1,19 +1,15 @@
 require 'rack'
 
 #===== class Ml_request =========================
-# Ml_request defines the protocol for requests that
+# a Rack::Request wrapper
+# # Ml_request defines the protocol for requests that
 # can be sent in to Muffinland.
 # Rack::Request to start with, but simpler ones for testing, possibly
 
 class Ml_request
-
   #nothing implemented at this level yet.
-
 end
 
-
-#==================================
-# a Rack::Request wrapper
 
 class Ml_RackRequest < Ml_request
   #note: this pile of accessors looks too complicated to me. Waiting for a simplification

@@ -1,6 +1,3 @@
-require 'logger'
-require 'set'
-
 
 class MuffinTin
 # known only by the Baker, the MuffinTin
@@ -36,8 +33,6 @@ class Baker
 
   def initialize
     @muffinTin = MuffinTin.new
-    @log = Logger.new(STDOUT)
-    @log.level = Logger::INFO
   end
 
   def muffin_at(id) ;  @muffinTin.at( id ) ;  end
