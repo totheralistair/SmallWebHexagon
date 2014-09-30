@@ -18,6 +18,7 @@ GEM
     tilt (1.4.1)
 
 PLATFORMS
+  java
   ruby
   x86-mingw32
 

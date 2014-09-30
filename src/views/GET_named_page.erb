@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>
+    Muffinland
+  </title>
+</head>
+<body>
+
+<p> Page <%= mlResult[:muffin_id] %> is:  <br />
+    <%= mlResult[:muffin_body] %>
+</p>
+
+<p>
+  <% if mlResult[:belongs_to_ids].size == 0 then %>
+      This does not yet belong to any collections.
+  <% end %>
+  <% if mlResult[:belongs_to_ids].size > 0 then %>
+      This muffin belongs in collections
+      <% mlResult[:belongs_to_ids].each {|tag|  %>
+          <a href="<%= tag %>">Page <%= tag %> </a>,
+      <% } %>
+  <% end %>
+</p>
+
+<p>
+  <% if !mlResult[:muffin_is_collection] then %>
+    This is not a collection page.
+  <% else %>
+      This is a collection page. It contains:
+      <% mlResult[:muffin_collects].each {|id|  %>
+          <a href="<%= id %>">Page <%= id %> </a>,
+      <% } %>
+  <% end %>
+</p>
+
+
+<hr />
+<p>Care to change this one's definition?  </p>
+
+<form method="post" action="">
+  Change page
+  <input type="number" name="MuffinNumber" min="<%= mlResult[:muffin_id] %>" max="<%= mlResult[:muffin_id] %>" value="<%= mlResult[:muffin_id] %>" >
+  to be text: <input type="text" name="MuffinContents" value="" >
+  <input type="submit" name="Change" value="Change to this text">
+</form>
+
+<form method="post" action=""
+      enctype="multipart/form-data">
+  Change page
+  <input type="number" name="MuffinNumber" min="<%= mlResult[:muffin_id] %>" max="<%= mlResult[:muffin_id] %>" value="<%= mlResult[:muffin_id] %>" >
+  to come from file: <input type="file" name="file" id="file">
+  <input type="submit" name="ChangeByFile" value="Change per this file">
+</form>
+
+<% if !mlResult[:muffin_is_collection] then %>
+<form method="post" action="">
+  <input type="number" name="MuffinNumber" min="<%= mlResult[:muffin_id] %>" max="<%= mlResult[:muffin_id] %>" value="<%= mlResult[:muffin_id] %>" >
+  <input type="submit" name="Make Collection" value="Make Collection">
+</form>
+
+<% else %>
+<form method="post" action="">
+  <input type="number" name="MuffinNumber" min="<%= mlResult[:muffin_id] %>" max="<%= mlResult[:muffin_id] %>" value="<%= mlResult[:muffin_id] %>" >
+  <input type="submit" name="Make Non-Collection" value="Make Non-Collection">
+</form>
+<% end %>
+
+
+
+
+
+
+<br />
+
+<% mlResult[:all_collections_just_ids].each {|id|  %>
+    <form method="post" action="">
+      Add
+      <input type="number" name="MuffinNumber" min="<%= mlResult[:muffin_id] %>" max="<%= mlResult[:muffin_id] %>" value="<%= mlResult[:muffin_id] %>" >
+      to collection
+      <input type="number" name="CollectorNumber" min="<%= id %>" max="<%= id %>" value="<%= id %>" >
+      <input type="submit" name="Tag" value="Tag It">
+    </form>
+<% } %>
+
+
+
+<hr />
+
+<p>Or add something new, either by text or uploading a file:  </p>
+
+
+<form method="post" action="">
+  With text: <input type="text" name="MuffinContents" value="" >
+  <input type="submit" name="Add" value="Add text">
+</form>
+
+<form method="post" action=""
+      enctype="multipart/form-data">
+  With file: <input type="file" name="file" id="file">
+  <input type="submit" name="Upload" value="Add from file">
+</form>
+
+
+<hr />
+
+The Muffins:
+<% mlResult[:dangerously_all_muffins_for_viewing].each_with_index { |value, index | %>
+    <p> <a href="<%= index %>">Muffin <%= index %> </a>: <%= value %> </p>
+<% } %>
+
+
+
+</body>
+</html>
+
