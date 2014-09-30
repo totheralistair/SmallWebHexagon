@@ -1,11 +1,6 @@
 # The API outputs of Muffinland, put in a separate file for easier maintenance
 class Muffinland
 
-  def ml_response_for_EmptyDB
-    ml_response = {
-        out_action:   "EmptyDB"
-    }
-  end
 
   def ml_response_for_GET_muffin( muffin )
     ml_response = { 
@@ -15,11 +10,6 @@ class Muffinland
     }
   end
 
-  def ml_response_for_UnregisteredCommand
-    ml_response = {
-        out_action:   "Unregistered Command"
-    }
-  end
 
   def ml_response_for_404_basic( request )
     ml_response = {
