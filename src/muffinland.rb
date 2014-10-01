@@ -16,6 +16,10 @@ class Muffinland
     @theBaker = Baker.new         # knows the muffins
   end
 
+  def bulk_load(muffins)
+    @theBaker.bulk_load muffins
+  end
+
 #===== Visitor Edge of the Hexagon =====
 # invoke 'handle(request)' directly.
 # input: any class that supports the Ml_request interface
@@ -41,7 +45,7 @@ class Muffinland
 
     ml_response =
         case
-          when @theHistorian.no_history_to_report?
+          when @theBaker.aint_got_no_muffins_yo?
             ml_response_for_EmptyDB
           when m
             ml_response_for_GET_muffin( m )
