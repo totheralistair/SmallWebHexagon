@@ -102,6 +102,24 @@ class TestRequests < Test::Unit::TestCase
     mlResponse.slice_per( exp ).should == exp
   end
 
+  
+  def test_03_baker_bulk_loads
+    request = construct_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" })
+
+    app = Muffinland.new
+    app.theBaker.bulk_load [request]
+
+    mlResponse = request_via_API( app, "GET", '/0' )
+    exp = {
+        out_action:   "GET_named_page",
+        muffin_id:   0,
+        muffin_body: "a"
+    }
+    mlResponse.slice_per( exp ).should == exp
+  end
+
+  
+
 #=================================================
 
 

@@ -11,6 +11,8 @@ require_relative '../src/historian'
 class Muffinland
 # Muffinland knows global policies and environment, not histories and private things.
 
+  attr_accessor :theBaker
+
   def initialize
     @theHistorian = Historian.new # knows the history of requests
     @theBaker = Baker.new         # knows the muffins

@@ -33,6 +33,7 @@ end
 # knows the handlings of muffins.
 
 class Baker
+  attr_reader :muffinTin
 
   def initialize
     @muffinTin = MuffinTin.new
