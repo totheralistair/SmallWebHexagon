@@ -88,18 +88,32 @@ class TestRequests < Test::Unit::TestCase
   end
 
   def test_02_muffinland_bulk_loads
-    request = construct_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" })
-
     app = Muffinland.new
+
+    request = construct_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })    
+
     app.bulk_load [request]
 
     mlResponse = request_via_API( app, "GET", '/0' )
     exp = {
         out_action:   "GET_named_page",
         muffin_id:   0,
-        muffin_body: "a"
+        muffin_body: "apple"
     }
     mlResponse.slice_per( exp ).should == exp
+
+    request2 = construct_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"banana" })
+    request3 = construct_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"blueberry" })
+
+    app.bulk_load [request, request2, request3]    
+
+    mlResponse = request_via_API( app, "GET", '/1' )
+    exp2 = {
+        out_action:   "GET_named_page",
+        muffin_id:   1,
+        muffin_body: "banana"
+    }
+    mlResponse.slice_per( exp2 ).should == exp2
   end
 
   

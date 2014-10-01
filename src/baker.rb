@@ -57,6 +57,7 @@ class Baker
   end
 
   def bulk_load(requests)
+    @muffinTin = MuffinTin.new
     requests.each {|r| add_muffin_from_text(r) }
   end
 end
