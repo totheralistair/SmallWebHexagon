@@ -9,10 +9,14 @@ Test::Unit::TestCase.include RSpec::Matchers
 
 
 def request_via_API( app, method, path, params={} ) # app should be Muffinland (hexagon API)
+  request = construct_request method, path, params
+  app.handle request
+end
+
+def construct_request(method, path, params={})
   env = Rack::MockRequest.env_for(path, {:method => method, :params=>params}  )
   rr = Rack::Request.new(env)
   request = Ml_RackRequest.new( rr )
-  app.handle request
 end
 
 class Hash
@@ -38,7 +42,6 @@ class TestRequests < Test::Unit::TestCase
     exp =  {out_action:  "EmptyDB"}
     mlResponse.slice_per( exp ).should == exp
   end
-
 
   def test_01_posts_return_contents
     app = Muffinland.new
@@ -84,7 +87,38 @@ class TestRequests < Test::Unit::TestCase
 
   end
 
+  def test_02_muffinland_bulk_loads
+    request = construct_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" })
 
+    app = Muffinland.new
+    app.bulk_load [request]
+
+    mlResponse = request_via_API( app, "GET", '/0' )
+    exp = {
+        out_action:   "GET_named_page",
+        muffin_id:   0,
+        muffin_body: "a"
+    }
+    mlResponse.slice_per( exp ).should == exp
+  end
+
+  
+  def test_03_baker_bulk_loads
+    request = construct_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" })
+
+    app = Muffinland.new
+    app.theBaker.bulk_load [request]
+
+    mlResponse = request_via_API( app, "GET", '/0' )
+    exp = {
+        out_action:   "GET_named_page",
+        muffin_id:   0,
+        muffin_body: "a"
+    }
+    mlResponse.slice_per( exp ).should == exp
+  end
+
+  
 
 #=================================================
 

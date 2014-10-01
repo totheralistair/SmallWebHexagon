@@ -11,9 +11,15 @@ require_relative '../src/historian'
 class Muffinland
 # Muffinland knows global policies and environment, not histories and private things.
 
+  attr_accessor :theBaker
+
   def initialize
     @theHistorian = Historian.new # knows the history of requests
     @theBaker = Baker.new         # knows the muffins
+  end
+
+  def bulk_load(muffins)
+    @theBaker.bulk_load muffins
   end
 
 #===== Visitor Edge of the Hexagon =====
@@ -41,7 +47,7 @@ class Muffinland
 
     ml_response =
         case
-          when @theHistorian.no_history_to_report?
+          when @theBaker.aint_got_no_muffins_yo?
             ml_response_for_EmptyDB
           when m
             ml_response_for_GET_muffin( m )

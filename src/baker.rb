@@ -12,6 +12,9 @@ class MuffinTin
   def next_id ;  @muffins.size ;  end
   def default_muffin_id ; 0 ; end # let default page be page zero. Not sure this belongs here.
 
+  def empty?
+    @muffins.empty?
+  end
 
   def is_legit?( id )
     (id.is_a? Integer) && ( id > -1 ) && ( id < @muffins.size )
@@ -30,6 +33,7 @@ end
 # knows the handlings of muffins.
 
 class Baker
+  attr_reader :muffinTin
 
   def initialize
     @muffinTin = MuffinTin.new
@@ -39,6 +43,9 @@ class Baker
   def is_legit?(id) ;  @muffinTin.is_legit?(id) ;  end
   def default_muffin_id ; @muffinTin.default_muffin_id ; end
 
+  def aint_got_no_muffins_yo?
+    @muffinTin.empty?
+  end
 
   def muffin_at_id( m_id )
     muffin_at(m_id) if is_legit?(m_id)
@@ -49,7 +56,9 @@ class Baker
     m = @muffinTin.add_raw( request.incoming_contents )
   end
 
-
+  def bulk_load(requests)
+    requests.each {|r| add_muffin_from_text(r) }
+  end
 end
 
 
