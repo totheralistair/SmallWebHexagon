@@ -18,8 +18,9 @@ class Muffinland
     @theBaker = Baker.new         # knows the muffins
   end
 
-  def bulk_load(muffins)
-    @theBaker.bulk_load muffins
+  def use_warehouse(w)
+    @theHistorian.use_warehouse w
+    @theBaker.bulk_load w
   end
 
 #===== Visitor Edge of the Hexagon =====

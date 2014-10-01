@@ -87,12 +87,32 @@ class TestRequests < Test::Unit::TestCase
 
   end
 
-  def test_02_muffinland_bulk_loads
+  def test_04_historian_adds_to_history
     app = Muffinland.new
 
-    request = construct_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })    
+    warehouse = []
+    app.use_warehouse warehouse
 
-    app.bulk_load [request]
+    mlResponse = request_via_API( app, "GET", '/0' )
+    exp = {
+        out_action:   "EmptyDB"
+    }
+    mlResponse.slice_per( exp ).should == exp
+    warehouse.should be_empty
+
+
+
+    mlResponse = request_via_API( app, "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" } )
+    warehouse.should_not be_empty
+  end
+
+  def test_05_adding_warehouse_loads_muffins
+    app = Muffinland.new
+
+    request = construct_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
+
+    warehouse = [request]
+    app.use_warehouse warehouse
 
     mlResponse = request_via_API( app, "GET", '/0' )
     exp = {
@@ -102,34 +122,17 @@ class TestRequests < Test::Unit::TestCase
     }
     mlResponse.slice_per( exp ).should == exp
 
-    request2 = construct_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"banana" })
-    request3 = construct_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"blueberry" })
+    request2 = construct_request("POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"banana" } )
+    app.handle request2
+    warehouse[1].should == request2
 
-    app.bulk_load [request, request2, request3]    
-
-    mlResponse = request_via_API( app, "GET", '/1' )
+    mlResponse2 = request_via_API( app, "GET", '/1' )
     exp2 = {
         out_action:   "GET_named_page",
         muffin_id:   1,
         muffin_body: "banana"
     }
-    mlResponse.slice_per( exp2 ).should == exp2
-  end
-
-  
-  def test_03_baker_bulk_loads
-    request = construct_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" })
-
-    app = Muffinland.new
-    app.theBaker.bulk_load [request]
-
-    mlResponse = request_via_API( app, "GET", '/0' )
-    exp = {
-        out_action:   "GET_named_page",
-        muffin_id:   0,
-        muffin_body: "a"
-    }
-    mlResponse.slice_per( exp ).should == exp
+    mlResponse2.slice_per( exp2 ).should == exp2
   end
 
   
