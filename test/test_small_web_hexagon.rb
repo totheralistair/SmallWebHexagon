@@ -186,14 +186,14 @@ module FileWarehouse
   end
 end
 
-class StringIO
-  def _dump(level)
-    read
-  end
-
-  def self._load(stuff)
-    puts "***"
-    p stuff
-    new stuff
-  end
-end
+# class StringIO
+#   def _dump(level)
+#     read
+#   end
+# 
+#   def self._load(stuff)
+#     puts "***"
+#     p stuff
+#     new stuff
+#   end
+# end
