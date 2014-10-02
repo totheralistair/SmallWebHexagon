@@ -20,5 +20,8 @@ class Historian
     @thePosts << request
   end
 
+  def use_warehouse(w)
+    @thePosts = w
+  end
 end
 
