@@ -2,6 +2,8 @@ require 'rack/test'
 require 'rspec/expectations'
 require 'test/unit'
 require 'erubis'
+require 'fileutils'
+require 'yaml'
 require_relative '../src/muffinland.rb'
 require_relative '../src/ml_request'
 Test::Unit::TestCase.include RSpec::Matchers
@@ -135,10 +137,63 @@ class TestRequests < Test::Unit::TestCase
     mlResponse2.slice_per( exp2 ).should == exp2
   end
 
-  
+  def test_06_files_can_be_warehouses
+    return
+
+    app = Muffinland.new
+
+    request = construct_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
+
+#    p request
+#    puts Marshal.dump(request)
+
+    FileUtils.rm('warehouse.txt') if File.file?('warehouse.txt')
+    File.open('warehouse.txt', 'w') do |f|
+      f << YAML.dump(request)
+    end
+    warehouse = File.open('warehouse.txt')
+
+    warehouse.should_not be_nil
+
+    warehouse.extend FileWarehouse
+
+    app.use_warehouse warehouse
+
+    mlResponse = request_via_API( app, "GET", '/0' )
+    exp = {
+        out_action:   "GET_named_page",
+        muffin_id:   0,
+        muffin_body: "apple"
+    }
+    mlResponse.slice_per( exp ).should == exp
+  end  
 
 #=================================================
 
 
 end
 
+module FileWarehouse
+  def each(&block)
+    lines = readlines.map(&:strip).reject {|l| l.empty? }
+    lines.each {|l| block.call(YAML.load(l)) }
+  end
+
+  def size
+  end
+
+  def <<(o)
+  end
+end
+
+class StringIO
+  def _dump(level)
+    read
+  end
+
+  def self._load(stuff)
+    puts "***"
+    p stuff
+    new stuff
+  end
+end
