@@ -1,15 +1,15 @@
-# Welcome to Muffinland, the lazy CMS (or something)
+# Welcome to Smallwebhexagon, the lazy CMS (or something)
 # Alistair Cockburn and a couple of really nice friends
 # ideas: email, DTO test,
 
-require_relative '../src/ml_responses' # the API output defined for Muffinland
+require_relative '../src/ml_responses' # the API output defined for Smallwebhexagon
 require_relative '../src/baker'
 require_relative '../src/muffin'
 require_relative '../src/historian'
 
 
-class Muffinland
-# Muffinland knows global policies and environment, not histories and private things.
+class Smallwebhexagon
+# Smallwebhexagon knows global policies and environment, not histories and private things.
 
   attr_accessor :theBaker
 
@@ -18,9 +18,9 @@ class Muffinland
     @theBaker = Baker.new         # knows the muffins
   end
 
-  def use_warehouse(w)
-    @theHistorian.use_warehouse w
-    @theBaker.bulk_load w
+  def use_history(h)
+    @theHistorian.use_history h
+    @theBaker.bulk_load h
   end
 
 #===== Visitor Edge of the Hexagon =====

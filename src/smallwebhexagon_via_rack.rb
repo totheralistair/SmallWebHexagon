@@ -1,16 +1,16 @@
 require 'rack'
-require_relative '../src/muffinland'
+require_relative '../src/smallwebhexagon'
 require_relative '../src/ml_request'
 require_relative '../src/html_from_templatefile'
 
 
-class Muffinland_via_rack
-# Hex adapter to Muffinland using Rack for web-type I/O
+class Smallwebhexagon_via_rack
+# Hex adapter to Smallwebhexagon using Rack for web-type I/O
 # is also tied to Erubis, which may need to be changed one day
 
   def initialize( viewsFolder ) #ugh on passing viewsFolder in :(
     @viewsFolder = viewsFolder
-    @ml = Muffinland.new
+    @ml = Smallwebhexagon.new
   end
 
 

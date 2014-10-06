@@ -3,7 +3,7 @@ require 'rack'
 #===== class Ml_request =========================
 # a Rack::Request wrapper
 # # Ml_request defines the protocol for requests that
-# can be sent in to Muffinland.
+# can be sent in to Smallwebhexagon.
 # Rack::Request to start with, but simpler ones for testing, possibly
 
 class Ml_request

@@ -1,11 +1,11 @@
 # Here is how to go through Rackup
-require './src/muffinland_via_rack'
-run Muffinland_via_rack.new("./src/views/")
+require './src/smallwebhexagon_via_rack'
+run Smallwebhexagon_via_rack.new("./src/views/")
 
 
 
 # Here is how to go through Rack directly
-# require_relative './src/muffinland_via_rack.rb'
+# require_relative './src/smallwebhexagon_via_rack.rb'
 # Rack::Handler::WEBrick.run(
 #     Muffinland_via_rack.new("./src/views/"),
 #     :Port => 9292

@@ -1,5 +1,5 @@
-# The API outputs of Muffinland, put in a separate file for easier maintenance
-class Muffinland
+# The API outputs of Smallwebhexagon, put in a separate file for easier maintenance
+class Smallwebhexagon
 
   def ml_response_for_EmptyDB
     ml_response = {

@@ -20,7 +20,7 @@ class Historian
     @thePosts << request
   end
 
-  def use_warehouse(w)
+  def use_history(w)
     @thePosts = w
   end
 end
