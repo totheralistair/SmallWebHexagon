@@ -11,16 +11,14 @@ require_relative '../src/historian'
 class Smallwebhexagon
 # Smallwebhexagon knows global policies and environment, not histories and private things.
 
-  attr_accessor :theBaker
-
   def initialize
     @theHistorian = Historian.new # knows the history of requests
     @theBaker = Baker.new         # knows the muffins
   end
 
-  def use_history(h)
-    @theHistorian.use_history h
-    @theBaker.bulk_load h
+  def dangerously_replace_history(h)
+    @theHistorian.dangerously_replace_history h
+    @theBaker.dangerously_bulk_load h
   end
 
 #===== Visitor Edge of the Hexagon =====

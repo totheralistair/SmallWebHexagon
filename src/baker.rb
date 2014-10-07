@@ -33,7 +33,6 @@ end
 # knows the handlings of muffins.
 
 class Baker
-  attr_reader :muffinTin
 
   def initialize
     @muffinTin = MuffinTin.new
@@ -56,7 +55,7 @@ class Baker
     m = @muffinTin.add_raw( request.incoming_contents )
   end
 
-  def bulk_load(requests)
+  def dangerously_bulk_load(requests) # Dangerous cuz it throws away the previous MuffinTin
     @muffinTin = MuffinTin.new
     requests.each {|r| add_muffin_from_text(r) }
   end

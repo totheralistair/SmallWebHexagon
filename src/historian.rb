@@ -20,7 +20,7 @@ class Historian
     @thePosts << request
   end
 
-  def use_history(w)
+  def dangerously_replace_history(w)
     @thePosts = w
   end
 end
