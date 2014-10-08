@@ -14,9 +14,13 @@ end
 class Ml_RackRequest < Ml_request
   #note: this pile of accessors looks too complicated to me. Waiting for a simplification
 
-  def initialize( rack_request )
-    @myRequest = rack_request
+  def initialize( env )
+    @myRequest = Rack::Request.new( env )
   end
+
+  # old def initialize( rack_request )
+  #   @myRequest = rack_request
+  # end
 
   def get?; @myRequest.get? ;  end
   def post?; @myRequest.post? || thePath=="/post"            ; end

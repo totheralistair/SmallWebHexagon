@@ -9,112 +9,97 @@ require_relative '../src/ml_request'
 Test::Unit::TestCase.include RSpec::Matchers
 
 
-def construct_request(method, path, params={})
-  env = Rack::MockRequest.env_for(path, {:method => method, :params=>params}  )
-  request = Ml_RackRequest.new( Rack::Request.new( env ) )
-end
-
-
-
-def sending_expect( app, method, path, params, expectedResult )
-  mlResponse = app.handle construct_request( method, path, params )
-  expecting( mlResponse, expectedResult )
-end
-
-def expecting( fatHash, thinHash )
-  slice_per( fatHash, thinHash ).should == thinHash
-end
-
-# {:a=>1, :b=>2, :c=>3}.slice_per({:b=y, :c=>z}) returns {:b=>2, :c=>3}
-def slice_per( fatHash, thinHash )
-  thinHash.inject({}) { |slice, (k,v) | slice[k] = fatHash[k] ; slice }
-end
-
-
-
 class TestRequests < Test::Unit::TestCase
+  attr_accessor :app
+
+  def new_ml_request method, path, params={}
+    Ml_RackRequest.new  Rack::MockRequest.env_for( path, {:method => method, :params=>params} )
+  end
+
+  def sending_expect method, path, params, expectedResult
+    (app.handle new_ml_request( method, path, params ) ).
+        should include expectedResult
+  end
+  #------------------------------------
+
 
   def test_00_emptyDB_is_special_case
-    app = Smallwebhexagon.new
+    @app = Smallwebhexagon.new
 
-    sending_expect( app,  "GET", '/aaa', {} ,
-                    {out_action:  "EmptyDB"}
-    )
+    sending_expect "GET", '/aaa', {} ,
+                    {
+                        out_action:  "EmptyDB"
+                    }
   end
 
 
   def test_01_posts_return_contents
-    app = Smallwebhexagon.new
+    @app = Smallwebhexagon.new
 
-    sending_expect( app,  "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" } ,
+    sending_expect "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" },
                     {
                         out_action:   "GET_named_page",
                         muffin_id:   0,
                         muffin_body: "a"
                     }
-    )
 
-    sending_expect( app,    "POST", '/stillignored',{ "Add"=>"Add", "MuffinContents"=>"b" },
+    sending_expect "POST", '/stillignored',{ "Add"=>"Add", "MuffinContents"=>"b" },
                     {
                         out_action:   "GET_named_page",
                         muffin_id:   1,
                         muffin_body: "b"
                     }
-    )
 
-    sending_expect( app,  "GET", '/0', {},
+    sending_expect "GET", '/0', {},
               {
                   out_action:   "GET_named_page",
                   muffin_id:   0,
                   muffin_body: "a"
               }
-    )
 
-    sending_expect( app,   "GET", '/1', {},
+    sending_expect "GET", '/1', {},
                     {
                         out_action:   "GET_named_page",
                         muffin_id:   1,
                         muffin_body: "b"
                     }
-    )
 
-    sending_expect( app,   "GET", '/2', {},
+    sending_expect "GET", '/2', {},
                     {
                         out_action:   "404"
                     }
-    )
+
 
   end
 
 
   def test_02_can_load_history_externally
-    app = Smallwebhexagon.new
-    history = [ construct_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" }) ]
+    @app = Smallwebhexagon.new
+    history = [ new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" }) ]
 
     app.dangerously_replace_history history
 
-    sending_expect( app,   "GET", '/0', {},
+    sending_expect "GET", '/0', {},
                     {
                         out_action:   "GET_named_page",
                         muffin_id:   0,
                         muffin_body: "apple"
                     }
-    )
-
   end
 
 
   def test_03_historian_adds_to_history
-    app = Smallwebhexagon.new
+    @app = Smallwebhexagon.new
     history = []
     app.dangerously_replace_history history
 
-    mlResponse = app.handle construct_request(  "GET", '/1' )
-    history.should be_empty # GET does not add to history
+    request = new_ml_request(  "GET", '/1',{} )
+    app.handle request
+    history.should == []
 
-    request = construct_request( "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" } )
-    mlResponse = app.handle request
-    history[0].should == request # but POST does
+    request = new_ml_request( "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" } )
+    app.handle request
+    history[0].should == request
   end
 
 #====== BROKEN FROM HERE ON DOWN ======
@@ -123,7 +108,7 @@ class TestRequests < Test::Unit::TestCase
 
     app = Smallwebhexagon.new
 
-    request = construct_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
+    request = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
 
     puts Marshal.dump(request)
 
