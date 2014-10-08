@@ -5,12 +5,15 @@ require 'erubis'
 require 'fileutils'
 require 'yaml'
 require_relative '../src/smallwebhexagon.rb'
+require_relative '../src/smallwebhexagon_via_rack.rb'
 require_relative '../src/ml_request'
 Test::Unit::TestCase.include RSpec::Matchers
 
 
 class TestRequests < Test::Unit::TestCase
   attr_accessor :app
+
+  #------ utilities ---------
 
   def new_ml_request method, path, params={}
     Ml_RackRequest.new  Rack::MockRequest.env_for( path, {:method => method, :params=>params} )
@@ -20,16 +23,37 @@ class TestRequests < Test::Unit::TestCase
     (app.handle new_ml_request( method, path, params ) ).
         should include expectedResult
   end
-  #------------------------------------
+
+
+  def request_via_rack_adapter_without_server( app, method, path, params={} ) # app should be Muffinland_via_rack
+    request = Rack::MockRequest.new(app)
+    request.request(method, path, {:params=>params}) # sends the request through the Rack call(env) chain
+  end
+
+
+  def page_from_template( fn, binding )
+    pageTemplate = Erubis::Eruby.new(File.open( fn, 'r').read)
+    pageTemplate.result(binding)
+  end
+
+  #------ the tests ---------
+
+  def test_z_runs_via_Rack_adapter # just check hexagon integrity, not a data check
+    viewsFolder = "../src/views/"
+    @app = Smallwebhexagon_via_rack.new(viewsFolder)
+
+    request_via_rack_adapter_without_server( app, "GET", '/a?b=c', "d=e").body.
+        should == page_from_template( viewsFolder + "EmptyDB.erb" , binding )
+  end
 
 
   def test_00_emptyDB_is_special_case
     @app = Smallwebhexagon.new
 
     sending_expect "GET", '/aaa', {} ,
-                    {
-                        out_action:  "EmptyDB"
-                    }
+                   {
+                       out_action:  "EmptyDB"
+                   }
   end
 
 
