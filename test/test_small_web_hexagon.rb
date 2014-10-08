@@ -92,8 +92,6 @@ class TestRequests < Test::Unit::TestCase
                     {
                         out_action:   "404"
                     }
-
-
   end
 
 
@@ -117,8 +115,7 @@ class TestRequests < Test::Unit::TestCase
     history = []
     app.dangerously_replace_history history
 
-    request = new_ml_request(  "GET", '/1',{} )
-    app.handle request
+    app.handle new_ml_request(  "GET", '/1',{} )
     history.should == []
 
     request = new_ml_request( "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" } )
