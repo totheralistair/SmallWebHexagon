@@ -20,7 +20,11 @@ class TestRequests < Test::Unit::TestCase
   end
 
   def sending_expect method, path, params, expectedResult
-    (app.handle new_ml_request( method, path, params ) ).
+    sending_r_expect( new_ml_request( method, path, params ), expectedResult )
+  end
+
+  def sending_r_expect ml_req, expectedResult
+    (app.handle ml_req ).
         should include expectedResult
   end
 
@@ -29,7 +33,6 @@ class TestRequests < Test::Unit::TestCase
     request = Rack::MockRequest.new(app)
     request.request(method, path, {:params=>params}) # sends the request through the Rack call(env) chain
   end
-
 
   def page_from_template( fn, binding )
     pageTemplate = Erubis::Eruby.new(File.open( fn, 'r').read)
@@ -95,55 +98,154 @@ class TestRequests < Test::Unit::TestCase
   end
 
 
-  def test_02_can_load_history_externally
-    @app = Smallwebhexagon.new
-    history = [ new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" }) ]
+  def test_02_requests_serialize_and_reconstitute_back_and_forth
+    p "in test 2"
+    rreq0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
+    sreq0 = rreq0.serialized
 
-    app.dangerously_replace_history history
+    rreq1 = Ml_RackRequest::reconstitute_from( sreq0 )
+    sreq1 = rreq1.serialized
 
-    sending_expect "GET", '/0', {},
-                    {
-                        out_action:   "GET_named_page",
-                        muffin_id:   0,
-                        muffin_body: "apple"
-                    }
+    sreq0.should == sreq1
   end
+
+
+
+  def test_03_history_dumps_serialized_as_i_expect
+    p "in test 3"
+    @app = Smallwebhexagon.new
+
+    request0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
+    app.handle request0
+    sreq0 = request0.serialized  # warning - "handle" actually changes the request, so serialize & compare after 'handle'
+    rreq0 = Ml_RackRequest::reconstitute_from( sreq0 )
+    ssreq0 = rreq0.serialized
+
+    app.dangerously_dump_history.should == [ ssreq0 ]
+
+    request1 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"banaba" })
+    app.handle request1
+    sreq1 = request1.serialized
+    app.dangerously_dump_history.should == [ sreq0, sreq1 ]
+
+  end
+
+
+
+
+
+
+  def test_04_loads_history_from_array
+    @app = Smallwebhexagon.new
+    request1 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
+    sreq = request1.serialized
+
+    app.dangerously_replace_history [ sreq ]
+
+
+
+  end
+
+
+
 
 
   def test_03_historian_adds_to_history
+    return "CUZ IT FAILS, SUCKA"
     @app = Smallwebhexagon.new
-    history = []
-    app.dangerously_replace_history history
+    request = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
+    sreq = request.serialized
+    app.dangerously_replace_history [ sreq ]
 
-    app.handle new_ml_request(  "GET", '/1',{} )
-    history.should == []
+    request = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"chickens" })
 
-    request = new_ml_request( "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" } )
+    p "pre handle request"
+    p request
+
+    p "history before"
+    app.dangerously_dump_history
+    p ""
+
+
     app.handle request
-    history[0].should == request
+    # sending_r_expect request,
+    #                {
+    #                    out_action:   "GET_named_page",
+    #                    muffin_id:   0,
+    #                    muffin_body: "chickens"
+    #                }
+    # p "post handle request"
+    # p request
+
+    p "history"
+    p app.dangerously_dump_history
+p "so there"
+
+    app.dangerously_dump_history.should == [
+        sreq,
+        request.serialized ]
+
   end
+
+
+
+
+
+
+
+
+
+
+
 
 #====== BROKEN FROM HERE ON DOWN ======
   def test_06_can_load_history_from_files
     return
 
     app = Smallwebhexagon.new
+    request = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
+
+
+
+    puts request.racks_input_value_raw.inspect
+    p request.racks_error_value_raw.string
+
+    str = request.racks_input_value_as_string
+    request.replace_racks_input_with_string( str )
+    puts request.racks_input_value_raw.inspect
 
     request = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
+    request.replace_racks_input_with_its_value
+    puts request.racks_input_value_raw.inspect
+
+    # request.replace_racks_fake_input_with_new_StringIO
+    # puts request.racks_input_value_raw.inspect
+    # puts request.racks_input_value_raw.string
+
+    request.replace_racks_errors_with_nil
+    p YAML.dump(request)
+
+    p "boo"
+
+    puts Marshal.dump(request).inspect
+
+
+
+    return
 
     puts Marshal.dump(request)
 
-    FileUtils.rm('warehouse.txt') if File.file?('warehouse.txt')
-    File.open('warehouse.txt', 'w') do |f|
+    FileUtils.rm('history.txt') if File.file?('history.txt')
+    File.open('history.txt', 'w') do |f|
       f << YAML.dump(request)
     end
-    warehouse = File.open('warehouse.txt')
+    history = File.open('history.txt')
 
-    warehouse.should_not be_nil
+    history.should_not be_nil
 
-    warehouse.extend FileWarehouse
+    history.extend FileWarehouse
 
-    app.dangerously_replace_history warehouse
+    app.dangerously_replace_history history
 
     mlResponse = request_via_API( app, "GET", '/0' )
     exp = {
@@ -154,13 +256,9 @@ class TestRequests < Test::Unit::TestCase
     mlResponse.slice_per( exp ).should == exp
   end
 
-#=================================================
-
-
 end
 
-=begin
-module FileWarehouse
+module More_notes_FileWarehouse
   def each(&block)
     lines = readlines.map(&:strip).reject {|l| l.empty? }
     lines.each {|l| block.call(YAML.load(l)) }
@@ -172,4 +270,12 @@ module FileWarehouse
   def <<(o)
   end
 end
-=end
+
+def just_notes
+  require 'open-uri'
+  url = 'http://upload.wikimedia.org/wikipedia/commons/8/89/Robie_House.jpg'
+  file = Tempfile.new(['temp','.jpg'])
+  stringIo = open(url)
+  file.binmode
+  file.write stringIo.read
+end

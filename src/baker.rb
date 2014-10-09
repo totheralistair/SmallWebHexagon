@@ -38,6 +38,12 @@ class Baker
     @muffinTin = MuffinTin.new
   end
 
+  # def dangerously_new_muffintin
+  #   @muffinTin = MuffinTin.new
+  # end
+
+
+
   def muffin_at(id) ;  @muffinTin.at( id ) ;  end
   def is_legit?(id) ;  @muffinTin.is_legit?(id) ;  end
   def default_muffin_id ; @muffinTin.default_muffin_id ; end
@@ -51,14 +57,10 @@ class Baker
   end
 
 
-  def add_muffin_from_text( request ) # modify the Request!
+  def add_muffin_from_text( request ) # BAD. something wrong w this on Binary input
     m = @muffinTin.add_raw( request.incoming_contents )
   end
 
-  def dangerously_bulk_load(requests) # Dangerous cuz it throws away the previous MuffinTin
-    @muffinTin = MuffinTin.new
-    requests.each {|r| add_muffin_from_text(r) }
-  end
 end
 
 

@@ -17,8 +17,12 @@ class Smallwebhexagon
   end
 
   def dangerously_replace_history(h)
-    @theHistorian.dangerously_replace_history h
-    @theBaker.dangerously_bulk_load h
+    initialize
+    @theHistorian.dangerously_replace_history( @theBaker, h )
+  end
+
+  def dangerously_dump_history
+    @theHistorian.dangerously_dump_history
   end
 
 #===== Visitor Edge of the Hexagon =====

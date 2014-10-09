@@ -1,4 +1,5 @@
 require 'rack'
+require 'yaml'
 
 #===== class Ml_request =========================
 # a Rack::Request wrapper
@@ -14,13 +15,74 @@ end
 class Ml_RackRequest < Ml_request
   #note: this pile of accessors looks too complicated to me. Waiting for a simplification
 
+  def self.reconstitute_from serialized_request
+    rreq = YAML::load StringIO.new( serialized_request )
+    rreq.env["rack.input"] = StringIO.new(  rreq.env["rack.input"]  )
+    rreq.env["rack.errors"] = StringIO.new(  rreq.env["rack.errors"]  )
+
+     if rreq.env["rack.request.form_input"]
+       rreq.env["rack.request.form_input"] = StringIO.new(  rreq.env["rack.request.form_input"]  )
+     end
+    rreq
+  end
+
+
+
+  def serialized
+    rack_input = @myRequest.env["rack.input"]
+    if rack_input.class == StringIO
+      @myRequest.env["rack.input"] = rack_input.string
+      changed_rack_input = true
+    end
+
+    rack_errors = @myRequest.env["rack.errors"]
+    if rack_errors.class == StringIO
+      @myRequest.env["rack.errors"] = rack_errors.string
+      changed_rack_errors = true
+    end
+
+    form_input = @myRequest.env["rack.request.form_input"]
+    if form_input.class == StringIO
+      @myRequest.env["rack.request.form_input"] = form_input.string
+      changed_form_input = true
+    end
+
+    out = YAML::dump(self)
+
+    if changed_rack_input
+      @myRequest.env["rack.input"] = rack_input
+    end
+
+    if changed_rack_errors
+      @myRequest.env["rack.errors"] = rack_errors
+    end
+
+    if changed_form_input
+      @myRequest.env["rack.request.form_input"] = form_input
+    end
+
+    out
+
+  end
+
+
+
+
   def initialize( env )
     @myRequest = Rack::Request.new( env )
   end
 
-  # old def initialize( rack_request )
-  #   @myRequest = rack_request
-  # end
+
+  def env
+    @myRequest.env
+  end
+
+
+
+
+
+
+
 
   def get?; @myRequest.get? ;  end
   def post?; @myRequest.post? || thePath=="/post"            ; end
