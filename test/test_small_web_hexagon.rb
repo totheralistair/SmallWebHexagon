@@ -31,7 +31,7 @@ class TestRequests < Test::Unit::TestCase
 
   def request_via_rack_adapter_without_server( app, method, path, params={} ) # app should be Muffinland_via_rack
     request = Rack::MockRequest.new(app)
-    request.request(method, path, {:params=>params}) # sends the request through the Rack call(env) chain
+    request.request(method, path, {:params=>params}) # sends the r0 through the Rack call(env) chain
   end
 
   def page_from_template( fn, binding )
@@ -103,13 +103,13 @@ class TestRequests < Test::Unit::TestCase
 
   def test_02_requests_serialize_and_reconstitute_back_and_forth
     p "in test 2"
-    rreq0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
-    sreq0 = rreq0.serialized
+    r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
+    s0 = r0.serialized
 
-    rreq1 = Ml_RackRequest::reconstitute_from( sreq0 )
-    sreq1 = rreq1.serialized
+    r1 = Ml_RackRequest::reconstitute_from( s0 )
+    s1 = r1.serialized
 
-    sreq0.should == sreq1
+    s0.should == s1
   end
 
 
@@ -118,197 +118,77 @@ class TestRequests < Test::Unit::TestCase
     p "in test 3"
     @app = Smallwebhexagon.new
 
-    request0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
-    p request0
-    request0.theParams
-    p request0
-    p "boob"
+    r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
+    s0 = r0.serialized
+    app.handle r0
+    app.dangerously_serialized_history.should == [ s0 ]
 
-    app.handle request0
-    sreq0 = request0.serialized  # warning - "handle" actually changes the request, so serialize & compare after 'handle'
-    rreq0 = Ml_RackRequest::reconstitute_from( sreq0 )
-    ssreq0 = rreq0.serialized
-
-    app.dangerously_serialize_posts_history.should == [ ssreq0 ]
-
-    request1 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"banaba" })
-    app.handle request1
-    sreq1 = request1.serialized
-    app.dangerously_serialize_posts_history.should == [ sreq0, sreq1 ]
-
+    r1 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"banana" })
+    s1 = r1.serialized
+    app.handle r1
+    app.dangerously_serialized_history.should == [ s0, s1 ]
   end
 
 
-
-  def NO_test_04_loads_history_from_array_and_grows_it
-    #BROKEN
-
+  def test_04_loads_history_from_array_and_grows_it
+    p "in test 4"
     @app = Smallwebhexagon.new
 
-    requestAppleOnce = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
-    p requestAppleOnce
-    requestAppleOnce.theParams
-    p requestAppleOnce
-    p "boo"
-    app.handle requestAppleOnce # we have to let ML change the request. ugh.
-    historyAfterAppleOnce = app.dangerously_serialize_posts_history
-    sreqAppleOnce = historyAfterAppleOnce[0] # get the serialized request post-handling
+    r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
+    s0 = r0.serialized
+    app.dangerously_replace_history [ s0 ]
 
-    requestBanabaOnce = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"banaba" })
-    app.handle requestBanabaOnce
-    historyAfterBanabaOnce = app.dangerously_serialize_posts_history
-    sreqBanabaOnce = historyAfterBanabaOnce[0] # get the serialized request post-handling
-
-    app.dangerously_replace_history( historyAfterAppleOnce )
-    # just to be paranoid, Im' going to doublecheck the serialization again
-    historyAfterReload = app.dangerously_serialize_posts_history
-    historyAfterReload.should == historyAfterAppleOnce
-    historyAfterReload.should == [ sreqAppleOnce ]
-
-    requestBanabaAgain = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"banaba" })
-    app.handle requestBanabaAgain
-    historyAfterBanabaRerun = app.dangerously_serialize_posts_history
-
-    p "size shouled be 2"; historyAfterBanabaRerun.size.should == 2
-    puts historyAfterBanabaRerun[0].inspect
-    p "at 0 shd be apple"; historyAfterBanabaRerun[0].should == [ sreqAppleOnce ]
-
-    p "BAH. SREQAPPLEONCE GOT CHANGED OR SOMETHING. SUCK!"
-
-    # p "at 1 should be banaba"; historyAfterBanabaRerun[1].should == [ sreqBanabaOnce ]
-    # p historyAfterBanabaRerun[1]
-    # p sreqAppleOnce
-    # p sreqBanabaOnce
-    # historyAfterBanabaRerun#.should == [ sreqAppleOnce, sreqBanabaOnce ]
-
+    r1 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"banaba" })
+    s1 = r1.serialized
+    app.handle r1
+    app.dangerously_serialized_history.should == [ s0, s1 ]
   end
 
 
-
-
-
-  def test_03_historian_adds_to_history
-    return "CUZ IT FAILS, SUCKA"
+  def test_05_can_load_history_from_files
     @app = Smallwebhexagon.new
-    request = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
-    sreq = request.serialized
-    app.dangerously_replace_history [ sreq ]
-
-    request = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"chickens" })
-
-    p "pre handle request"
-    p request
-
-    p "history before"
-    app.dangerously_serialize_posts_history
-    p ""
+    r0 = new_ml_request 'POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" }
+    s0 = r0.serialized
+    p s0
 
 
-    app.handle request
-    # sending_r_expect request,
-    #                {
-    #                    out_action:   "GET_named_page",
-    #                    muffin_id:   0,
-    #                    muffin_body: "chickens"
-    #                }
-    # p "post handle request"
-    # p request
-
-    p "history"
-    p app.dangerously_serialize_posts_history
-p "so there"
-
-    app.dangerously_serialize_posts_history.should == [
-        sreq,
-        request.serialized ]
-
-  end
+    #darn. YAML puts \n after things; mucks up files
 
 
-
-
-
-
-
-
-
-
-
-
-#====== BROKEN FROM HERE ON DOWN ======
-  def test_06_can_load_history_from_files
-    return
-
-    app = Smallwebhexagon.new
-    request = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
-
-
-
-    puts request.racks_input_value_raw.inspect
-    p request.racks_error_value_raw.string
-
-    str = request.racks_input_value_as_string
-    request.replace_racks_input_with_string( str )
-    puts request.racks_input_value_raw.inspect
-
-    request = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
-    request.replace_racks_input_with_its_value
-    puts request.racks_input_value_raw.inspect
-
-    # request.replace_racks_fake_input_with_new_StringIO
-    # puts request.racks_input_value_raw.inspect
-    # puts request.racks_input_value_raw.string
-
-    request.replace_racks_errors_with_nil
-    p YAML.dump(request)
-
-    p "boo"
-
-    puts Marshal.dump(request).inspect
-
-
-
-    return
-
-    puts Marshal.dump(request)
-
-    FileUtils.rm('history.txt') if File.file?('history.txt')
-    File.open('history.txt', 'w') do |f|
-      f << YAML.dump(request)
+    fn = 'mlhistory.txt' ; FileUtils.rm( fn ) if File.file?( fn )
+    File.open( fn, 'w') do |f|
+      f << s0
+      f << s0
     end
-    history = File.open('history.txt')
-
-    history.should_not be_nil
-
-    history.extend FileWarehouse
+    history = File.open( fn )
 
     app.dangerously_replace_history history
 
-    mlResponse = request_via_API( app, "GET", '/0' )
-    exp = {
-        out_action:   "GET_named_page",
-        muffin_id:   0,
-        muffin_body: "apple"
-    }
-    mlResponse.slice_per( exp ).should == exp
+    sending_expect "GET", '/0', {},
+                   {
+                       out_action:   "GET_named_page",
+                       muffin_id:   0,
+                       muffin_body: "apple"
+                   }
+
+    sending_expect "GET", '/1', {},
+                   {
+                       out_action:   "GET_named_page",
+                       muffin_id:   1,
+                       muffin_body: "banana"
+                   }
+
+    sending_expect "GET", '/2', {},
+                   {
+                       out_action:   "404"
+                   }
+
   end
 
 end
 
-module More_notes_FileWarehouse
-  def each(&block)
-    lines = readlines.map(&:strip).reject {|l| l.empty? }
-    lines.each {|l| block.call(YAML.load(l)) }
-  end
 
-  def size
-  end
-
-  def <<(o)
-  end
-end
-
-def just_notes
+def just_some_notes
   require 'open-uri'
   url = 'http://upload.wikimedia.org/wikipedia/commons/8/89/Robie_House.jpg'
   file = Tempfile.new(['temp','.jpg'])

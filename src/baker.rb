@@ -58,9 +58,7 @@ class Baker
 
 
   def add_muffin_from_text( request ) # BAD. something wrong w this on Binary input
-    puts "in add_muffin_from_text: " + request.inspect
     m = @muffinTin.add_raw( request.incoming_contents )
-    puts "ending add_muffin_from_text: " + request.inspect
     m
   end
 

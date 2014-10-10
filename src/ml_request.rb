@@ -15,75 +15,44 @@ end
 class Ml_RackRequest < Ml_request
   #note: this pile of accessors looks too complicated to me. Waiting for a simplification
 
+  def initialize( env )
+    @myRequest = Rack::Request.new( env )
+    @myRequest.params # calling params has "side effect" of changing the Request! :(.
+    # better to do it now and save later surprises :(
+  end
+
   def self.reconstitute_from serialized_request
     rreq = YAML::load StringIO.new( serialized_request )
     rreq.env["rack.input"] = StringIO.new(  rreq.env["rack.input"]  )
     rreq.env["rack.errors"] = StringIO.new(  rreq.env["rack.errors"]  )
 
-     if rreq.env["rack.request.form_input"]
-       rreq.env["rack.request.form_input"] = StringIO.new(  rreq.env["rack.request.form_input"]  )
-     end
+    if rreq.env["rack.request.form_input"]
+      rreq.env["rack.request.form_input"] = StringIO.new(  rreq.env["rack.request.form_input"]  )
+    end
     rreq
   end
 
-
-
   def serialized
     rack_input = @myRequest.env["rack.input"]
-    if rack_input.class == StringIO
-      @myRequest.env["rack.input"] = rack_input.string
-      changed_rack_input = true
-    end
-
     rack_errors = @myRequest.env["rack.errors"]
-    if rack_errors.class == StringIO
-      @myRequest.env["rack.errors"] = rack_errors.string
-      changed_rack_errors = true
-    end
-
     form_input = @myRequest.env["rack.request.form_input"]
-    if form_input.class == StringIO
-      @myRequest.env["rack.request.form_input"] = form_input.string
-      changed_form_input = true
-    end
+
+    @myRequest.env["rack.input"] = rack_input.string if rack_input.class == StringIO
+    @myRequest.env["rack.errors"] = rack_errors.string if rack_errors.class == StringIO
+    @myRequest.env["rack.request.form_input"] = form_input.string if form_input.class == StringIO
 
     out = YAML::dump(self)
 
-    if changed_rack_input
-      @myRequest.env["rack.input"] = rack_input
-    end
-
-    if changed_rack_errors
-      @myRequest.env["rack.errors"] = rack_errors
-    end
-
-    if changed_form_input
-      @myRequest.env["rack.request.form_input"] = form_input
-    end
-
+    @myRequest.env["rack.input"] = rack_input
+    @myRequest.env["rack.errors"] = rack_errors
+    @myRequest.env["rack.request.form_input"] = form_input
     out
-
-  end
-
-
-
-
-  def initialize( env )
-    @myRequest = Rack::Request.new( env )
-    @myRequest.params # calling params has "side effect" of changing the Request! :(.
-                      # better to do it now and save later surprises :(
   end
 
 
   def env
     @myRequest.env
   end
-
-
-
-
-
-
 
 
   def get?; @myRequest.get? ;  end
@@ -97,15 +66,7 @@ class Ml_RackRequest < Ml_request
     end
   end
 
-  def theParams ;
-    puts "in theParams: " + @myRequest.inspect
-    p @myRequest.GET
-    p @myRequest.POST
-
-    z=@myRequest.params ;
-    puts "done theParams: " + @myRequest.inspect
-    z
-  end
+  def theParams ; @myRequest.params ;  end
   def thePath ;  @myRequest.path ; end
 
   def name_from_path ;  thePath[ 1..thePath.size ] ;  end
@@ -118,16 +79,7 @@ class Ml_RackRequest < Ml_request
 
   def incoming_muffin_name;  theParams["MuffinNumber"]   ;  end
   def incoming_muffin_id; n = incoming_muffin_name ; id_from_name( n ) ;  end
-  def incoming_contents;
-    puts "in incoming_contents: " + self.inspect
-
-    f=theParams["MuffinContents"] ;
-    puts "f:" + f.inspect
-
-    puts "ending incoming_contents: " + self.inspect
-    f
-  end
-
+  def incoming_contents; theParams["MuffinContents"] ;  end
 
 end
 
