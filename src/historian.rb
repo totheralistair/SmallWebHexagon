@@ -21,22 +21,9 @@ class Historian
     @thePosts << request
   end
 
-  def dangerously_replace_history( aBaker, serializedRequests )
-    # I think this is incorrect, as it only replaces muffins, it should
-    # "quietly" re-handle the POSTs, without output.
-    initialize
-    serializedRequests.each {|sreq|
-      rreq = Ml_RackRequest::reconstitute_from sreq
-      aBaker.add_muffin_from_text rreq
-      self.add_request rreq
-    }
-  end
-
-  def dangerously_dump_history
+  def dangerously_serialize_posts_history
     out = Array.new
-    @thePosts.each {|rreq|
-      out << rreq.serialized
-    }
+    @thePosts.each {|req| out << req.serialized }
     out
   end
 

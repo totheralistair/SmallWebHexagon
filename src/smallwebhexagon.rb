@@ -16,13 +16,16 @@ class Smallwebhexagon
     @theBaker = Baker.new         # knows the muffins
   end
 
-  def dangerously_replace_history(h)
+  def dangerously_replace_history(serializedRequests)
     initialize
-    @theHistorian.dangerously_replace_history( @theBaker, h )
+    serializedRequests.each {|sreq|
+      rreq = Ml_RackRequest::reconstitute_from sreq
+      handle rreq
+    }
   end
 
-  def dangerously_dump_history
-    @theHistorian.dangerously_dump_history
+  def dangerously_serialize_posts_history
+    @theHistorian.dangerously_serialize_posts_history
   end
 
 #===== Visitor Edge of the Hexagon =====

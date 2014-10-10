@@ -124,12 +124,12 @@ class TestRequests < Test::Unit::TestCase
     rreq0 = Ml_RackRequest::reconstitute_from( sreq0 )
     ssreq0 = rreq0.serialized
 
-    app.dangerously_dump_history.should == [ ssreq0 ]
+    app.dangerously_serialize_posts_history.should == [ ssreq0 ]
 
     request1 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"banaba" })
     app.handle request1
     sreq1 = request1.serialized
-    app.dangerously_dump_history.should == [ sreq0, sreq1 ]
+    app.dangerously_serialize_posts_history.should == [ sreq0, sreq1 ]
 
   end
 
@@ -142,23 +142,23 @@ class TestRequests < Test::Unit::TestCase
 
     requestAppleOnce = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
     app.handle requestAppleOnce # we have to let ML change the request. ugh.
-    historyAfterAppleOnce = app.dangerously_dump_history
+    historyAfterAppleOnce = app.dangerously_serialize_posts_history
     sreqAppleOnce = historyAfterAppleOnce[0] # get the serialized request post-handling
 
     requestBanabaOnce = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"banaba" })
     app.handle requestBanabaOnce
-    historyAfterBanabaOnce = app.dangerously_dump_history
+    historyAfterBanabaOnce = app.dangerously_serialize_posts_history
     sreqBanabaOnce = historyAfterBanabaOnce[0] # get the serialized request post-handling
 
     app.dangerously_replace_history( historyAfterAppleOnce )
     # just to be paranoid, Im' going to doublecheck the serialization again
-    historyAfterReload = app.dangerously_dump_history
+    historyAfterReload = app.dangerously_serialize_posts_history
     historyAfterReload.should == historyAfterAppleOnce
     historyAfterReload.should == [ sreqAppleOnce ]
 
     requestBanabaAgain = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"banaba" })
     app.handle requestBanabaAgain
-    historyAfterBanabaRerun = app.dangerously_dump_history
+    historyAfterBanabaRerun = app.dangerously_serialize_posts_history
 
     p "size shouled be 2"; historyAfterBanabaRerun.size.should == 2
     puts historyAfterBanabaRerun[0].inspect
@@ -191,7 +191,7 @@ class TestRequests < Test::Unit::TestCase
     p request
 
     p "history before"
-    app.dangerously_dump_history
+    app.dangerously_serialize_posts_history
     p ""
 
 
@@ -206,10 +206,10 @@ class TestRequests < Test::Unit::TestCase
     # p request
 
     p "history"
-    p app.dangerously_dump_history
+    p app.dangerously_serialize_posts_history
 p "so there"
 
-    app.dangerously_dump_history.should == [
+    app.dangerously_serialize_posts_history.should == [
         sreq,
         request.serialized ]
 
