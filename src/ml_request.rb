@@ -13,12 +13,21 @@ end
 
 
 class Ml_RackRequest < Ml_request
+# Warning about Rack::Request, it has two semi-undocumented strange things
+# 1. three fields are StringIO, which do not serialize.
+#    I have to turn them into strings temporarily to serialize,
+#    and recreate them on loading from serializing
+# 2. "params" modifies the request, adding the @params inst var
+#    i.e. reading the params changes the request
+#    This may only matter for testing or serialization.
+#    but it is an undocumented side effect of reading params, so watch out.
+
   #note: this pile of accessors looks too complicated to me. Waiting for a simplification
 
   def initialize( env )
     @myRequest = Rack::Request.new( env )
     @myRequest.params # calling params has "side effect" of changing the Request! :(.
-    # better to do it now and save later surprises :(
+    # better to do it now and save later surprises :-(
   end
 
   def self.reconstitute_from serialized_request
