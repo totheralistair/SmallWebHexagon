@@ -37,7 +37,7 @@ class TestRequests < Test::Unit::TestCase
     whatever = r0.incoming_contents
 
     s1 = r0.serialized
-    s1.should_not == s0
+    s1.should == s0   # except it doesn't
 
   end
 
@@ -53,7 +53,7 @@ class TestRequests < Test::Unit::TestCase
     whatever = r0.incoming_contents
 
     s1 = r0.serialized
-    s1.should == s0
+    s1.should == s0   # shouldn't have different behavior than test_02
 
   end
 
