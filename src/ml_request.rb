@@ -70,6 +70,8 @@ class Ml_RackRequest < Ml_request
 
   def initialize( env )
     @myRequest = Rack::Request.new( env )
+    @myRequest.params # calling params has "side effect" of changing the Request! :(.
+                      # better to do it now and save later surprises :(
   end
 
 
@@ -95,7 +97,15 @@ class Ml_RackRequest < Ml_request
     end
   end
 
-  def theParams ;  @myRequest.params ; end
+  def theParams ;
+    puts "in theParams: " + @myRequest.inspect
+    p @myRequest.GET
+    p @myRequest.POST
+
+    z=@myRequest.params ;
+    puts "done theParams: " + @myRequest.inspect
+    z
+  end
   def thePath ;  @myRequest.path ; end
 
   def name_from_path ;  thePath[ 1..thePath.size ] ;  end
@@ -108,7 +118,15 @@ class Ml_RackRequest < Ml_request
 
   def incoming_muffin_name;  theParams["MuffinNumber"]   ;  end
   def incoming_muffin_id; n = incoming_muffin_name ; id_from_name( n ) ;  end
-  def incoming_contents;  theParams["MuffinContents"] ;  end
+  def incoming_contents;
+    puts "in incoming_contents: " + self.inspect
+
+    f=theParams["MuffinContents"] ;
+    puts "f:" + f.inspect
+
+    puts "ending incoming_contents: " + self.inspect
+    f
+  end
 
 
 end

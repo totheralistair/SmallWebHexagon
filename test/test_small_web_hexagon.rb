@@ -119,6 +119,11 @@ class TestRequests < Test::Unit::TestCase
     @app = Smallwebhexagon.new
 
     request0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
+    p request0
+    request0.theParams
+    p request0
+    p "boob"
+
     app.handle request0
     sreq0 = request0.serialized  # warning - "handle" actually changes the request, so serialize & compare after 'handle'
     rreq0 = Ml_RackRequest::reconstitute_from( sreq0 )
@@ -141,6 +146,10 @@ class TestRequests < Test::Unit::TestCase
     @app = Smallwebhexagon.new
 
     requestAppleOnce = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
+    p requestAppleOnce
+    requestAppleOnce.theParams
+    p requestAppleOnce
+    p "boo"
     app.handle requestAppleOnce # we have to let ML change the request. ugh.
     historyAfterAppleOnce = app.dangerously_serialize_posts_history
     sreqAppleOnce = historyAfterAppleOnce[0] # get the serialized request post-handling

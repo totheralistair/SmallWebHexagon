@@ -70,8 +70,12 @@ class Smallwebhexagon
 
 
   def handle_add_muffin( request )
+    puts "in handle_add_muffin: " + request.inspect
     m = @theBaker.add_muffin_from_text(request)
     ml_response_for_GET_muffin( m )
+    puts "ending handle_add_muffin: " + request.inspect
+    ml_response_for_GET_muffin( m )
+
   end
 
 end
