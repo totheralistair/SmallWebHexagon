@@ -5,7 +5,7 @@ require 'erubis'
 require 'fileutils'
 require 'yaml'
 require_relative '../src/for_Pat_ml_request_minus_params_read.rb'
-Test::Unit::TestCase.include RSpec::Matchers
+#Test::Unit::TestCase.include RSpec::Matchers
 
 
 class TestRequests < Test::Unit::TestCase
