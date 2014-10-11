@@ -57,7 +57,9 @@ class TestRequests < Test::Unit::TestCase
     s1.should == s0   # shouldn't have different behavior than test_02
   end
 
-  def test_04_file_also_works
+
+
+  def test_04_can_serialize_to_file
 
     r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"less chickens" })
     whatever = r0.incoming_contents
@@ -81,16 +83,23 @@ class TestRequests < Test::Unit::TestCase
     history =YAML::load_stream( openstream )
     history[0].serialized.should == s0
     history[1].serialized.should == s1
-    p s1.class
 
-    #----------------
-
-    str = StringIO.new %{This is a test of a string as a file. \r\n
-                     And this could be another line in the file}
-
-    p str.gets # => "This is a test of a string as a file. \r\n"
+  end
 
 
+  def test_04_can_serialize_to_StringIO
+    #except it doesn't
+
+    r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"less chickens" })
+    whatever = r0.incoming_contents
+    s0 = r0.serialized
+
+
+    r1 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"more chickens" })
+    whatever = r1.incoming_contents
+    s1 = r1.serialized
+
+    #----- something just doesn't work in hree -----
     strio = StringIO.open do |sio|
       sio<< "boo"
       sio.write s1
