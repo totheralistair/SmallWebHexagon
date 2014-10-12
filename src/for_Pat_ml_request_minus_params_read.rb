@@ -38,7 +38,7 @@ class Ml_RackRequest < Ml_request
 
 
 
-  def self.reconstitute_from serialized_request
+  def self.deyamld serialized_request
     rreq = YAML::load StringIO.new( serialized_request )
     rreq.env["rack.input"] = StringIO.new(  rreq.env["rack.input"]  )
     rreq.env["rack.errors"] = StringIO.new(  rreq.env["rack.errors"]  )
@@ -50,7 +50,7 @@ class Ml_RackRequest < Ml_request
   end
 
 
-  def serialized
+  def yamld
     rack_input = @myRequest.env["rack.input"]
     rack_errors = @myRequest.env["rack.errors"]
     form_input = @myRequest.env["rack.request.form_input"]

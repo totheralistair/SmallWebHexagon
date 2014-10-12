@@ -18,10 +18,10 @@ class TestRequests < Test::Unit::TestCase
   def test_01_requests_serialize_and_reconstitute_back_and_forth
 
     r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"chickens" })
-    s0 = r0.serialized
+    s0 = r0.yamld
 
-    r1 = Ml_RackRequest::reconstitute_from( s0 )
-    s1 = r1.serialized
+    r1 = Ml_RackRequest::deyamld( s0 )
+    s1 = r1.yamld
 
     s0.should == s1
   end
@@ -31,12 +31,12 @@ class TestRequests < Test::Unit::TestCase
   def test_02_reading_params_changes_serialization
 
     r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"more chickens" })
-    s0 = r0.serialized
+    s0 = r0.yamld
 
     p r0.incoming_contents
     whatever = r0.incoming_contents
 
-    s1 = r0.serialized
+    s1 = r0.yamld
     s1.should == s0   # except it doesn't
 
   end
@@ -48,11 +48,11 @@ class TestRequests < Test::Unit::TestCase
 
     p r0.incoming_contents
 
-    s0 = r0.serialized
+    s0 = r0.yamld
 
     whatever = r0.incoming_contents
 
-    s1 = r0.serialized
+    s1 = r0.yamld
     s1.should == s0   # shouldn't have different behavior than test_02
 
   end
