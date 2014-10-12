@@ -4,7 +4,7 @@ require 'test/unit'
 require 'erubis'
 require 'fileutils'
 require 'yaml'
-require_relative '../src/for_Pat_ml_request_minus_params_read.rb'
+require_relative '../src/ml_request.rb'
 require 'stringio'
 
 
@@ -29,15 +29,15 @@ class TestRequests < Test::Unit::TestCase
 
 
   def test_02_reading_params_changes_serialization
+    #the new ml_request fixes the problem, so no workaround is needed
 
     r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"more chickens" })
     s0 = r0.yamld
 
-    p r0.incoming_contents
     whatever = r0.incoming_contents
 
     s1 = r0.yamld
-    s1.should_not == s0   # except it doesn't
+    s1.should == s0   # does now, cuz of the fixed-up ml_request
 
   end
 
@@ -45,8 +45,6 @@ class TestRequests < Test::Unit::TestCase
   def test_03_forcing_params_read_solves_serialization_problem
 
     r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"less chickens" })
-
-    p r0.incoming_contents
 
     s0 = r0.yamld
 
@@ -59,30 +57,29 @@ class TestRequests < Test::Unit::TestCase
 
 
   def test_04_can_serialize_to_file_and_to_stringio
-    r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"less chickens" });r0.incoming_contents
-    r1 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"more chickens" });r1.incoming_contents
+    r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"less chickens" })
+    r1 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"more chickens" })
     yamls = [r0.yamld, r1.yamld]
 
-    send_to_file( file_history='mlhistory.txt', yamls )
-    string_history = send_to_string( yamls )
+    array_to_file( yamls,file_history='mlhistory.txt' )
+    string_history = array_into_string( yamls )
 
-    histories_should_match( File.open( file_history ), yamls )
-    histories_should_match( StringIO.new(string_history), yamls )
+    stream_match_yamlds( File.open( file_history ), yamls )
+    stream_match_yamlds( StringIO.new(string_history), yamls )
   end
 
 
 end
 #===============
 
-def send_to_file( fn, array_of_yamlds )
-  fn = 'mlhistory.txt'
+def array_to_file( array_of_stuff, fn )
   FileUtils.rm( fn ) if File.file?( fn )
   File.open( fn, 'w') do |f|
-    array_of_yamlds.each {|y| f<<y}
+    array_of_stuff.each {|y| f<<y}
   end
 end
 
-def send_to_string( array_of_yamlds )
+def array_into_string( array_of_yamlds )
   array_of_yamlds.inject("") {|out, y| out << y}
 end
 
@@ -91,8 +88,8 @@ def deyaml(stream)
   YAML::load_documents( stream )
 end
 
-def     histories_should_match( stream, array_of_yamlds )
-  new_history =deyaml( stream )
+def stream_match_yamlds( stream_of_yamlds, array_of_yamlds )
+  new_history =deyaml( stream_of_yamlds )
   array_of_yamlds.each_with_index { |y, i|
     new_history[i].yamld.should == y
   }

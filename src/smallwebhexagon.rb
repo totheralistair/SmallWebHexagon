@@ -16,16 +16,19 @@ class Smallwebhexagon
     @theBaker = Baker.new         # knows the muffins
   end
 
-  def dangerously_replace_history(serializedRequests)
+
+  def dangerously_replace_history(requests)
     initialize
-    serializedRequests.each {|sreq|
-      rreq = Ml_RackRequest::reconstitute_from sreq
-      handle rreq
-    }
+    requests.each {|r| handle r }
   end
 
-  def dangerously_serialized_history
-    @theHistorian.dangerously_serialized_history
+  def dangerously_all_posts # array of requests
+    @theHistorian.dangerously_all_posts
+  end
+
+  def dangerously_all_posts_yamld #array of yamld requests
+    # not sure this belongs inside the hexagon
+    @theHistorian.dangerously_all_posts_yamld
   end
 
 #===== Visitor Edge of the Hexagon =====

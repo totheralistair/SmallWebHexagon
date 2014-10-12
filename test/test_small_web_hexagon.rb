@@ -7,7 +7,7 @@ require 'yaml'
 require_relative '../src/smallwebhexagon.rb'
 require_relative '../src/smallwebhexagon_via_rack.rb'
 require_relative '../src/ml_request'
-Test::Unit::TestCase.include RSpec::Matchers
+#Test::Unit::TestCase.include RSpec::Matchers not needed at the moment
 
 
 class TestRequests < Test::Unit::TestCase
@@ -24,8 +24,18 @@ class TestRequests < Test::Unit::TestCase
   end
 
   def sending_r_expect ml_req, expectedResult
-    (app.handle ml_req ).
-        should include expectedResult
+    actual = app.handle ml_req
+    hash_submatch actual, expectedResult
+  end
+
+
+  def hash_submatch( fatHash, thinHash )
+    slice_per( fatHash, thinHash ).should == thinHash
+  end
+
+  # {:a=>1, :b=>2, :c=>3}.slice_per({:b=y, :c=>z}) returns {:b=>2, :c=>3}
+  def slice_per( fatHash, thinHash )
+    thinHash.inject({}) { |slice, (k,v) | slice[k] = fatHash[k] ; slice }
   end
 
 
@@ -38,6 +48,42 @@ class TestRequests < Test::Unit::TestCase
     pageTemplate = Erubis::Eruby.new(File.open( fn, 'r').read)
     pageTemplate.result(binding)
   end
+
+  #===============
+
+  def deyaml_requests_from_stream(stream)
+    requests = YAML::load_documents( stream )
+    requests.each {|r| r.clean_deyamld }
+  end
+
+  def array_to_file( array_of_stuff, fn )
+    FileUtils.rm( fn ) if File.file?( fn )
+    File.open( fn, 'w') do |f|
+      array_of_stuff.each {|y| f<<y}
+    end
+  end
+
+  def array_into_string( array_of_yamlds )
+    array_of_yamlds.inject("") {|out, y| out << y}
+  end
+
+
+  def stream_match_yamlds( stream_of_yamlds, array_of_yamlds )
+    new_history =deyaml_requests_from_stream( stream_of_yamlds )
+    array_of_yamlds.each_with_index { |y, i|
+      new_history[i].yamld.should == y
+    }
+  end
+
+
+  def adapter_dangerously_replace_history_from_stream( app, stream )
+    requests = deyaml_requests_from_stream(stream)
+    requests.each {|r| r.clean_deyamld }
+    app.dangerously_replace_history requests
+  end
+
+
+
 
   #------ the tests ---------
 
@@ -63,7 +109,7 @@ class TestRequests < Test::Unit::TestCase
 
 
   def test_01_posts_return_contents
-    p "in test 1"
+    p "in test test_01_posts_return_contents"
     @app = Smallwebhexagon.new
 
     sending_expect "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" },
@@ -102,97 +148,86 @@ class TestRequests < Test::Unit::TestCase
 
 
   def test_02_requests_serialize_and_reconstitute_back_and_forth
-    p "in test 2"
+    p "in test test_02_requests_serialize_and_reconstitute_back_and_forth"
     r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
-    s0 = r0.serialized
+    y0 = r0.yamld
 
-    r1 = Ml_RackRequest::reconstitute_from( s0 )
-    s1 = r1.serialized
+    r1 = Ml_RackRequest::deyamld( y0 )
+    y1 = r1.yamld
 
-    s0.should == s1
+    y0.should == y1
   end
 
 
 
-  def test_03_history_dumps_serialized_as_i_expect
-    p "in test 3"
+  def test_03_can_reload_history_from_array_and_continue
+    p "in test test_03_can_reload_history_from_array_and_continue"
     @app = Smallwebhexagon.new
 
     r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
-    s0 = r0.serialized
-    app.handle r0
-    app.dangerously_serialized_history.should == [ s0 ]
-
-    r1 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"banana" })
-    s1 = r1.serialized
-    app.handle r1
-    app.dangerously_serialized_history.should == [ s0, s1 ]
-  end
-
-
-  def test_04_loads_history_from_array_and_grows_it
-    p "in test 4"
-    @app = Smallwebhexagon.new
-
-    r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
-    s0 = r0.serialized
-    app.dangerously_replace_history [ s0 ]
+    app.dangerously_replace_history [ r0 ]
 
     r1 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"banaba" })
-    s1 = r1.serialized
     app.handle r1
-    app.dangerously_serialized_history.should == [ s0, s1 ]
+
+    app.dangerously_all_posts.should == [ r0, r1 ]
   end
 
 
-  def Failing_test_05_can_load_history_from_files
+
+
+  def test_04_can_run_history_to_from_strings_and_files
+    p "in test test_04_can_run_history_to_from_strings_and_files"
     @app = Smallwebhexagon.new
-    r0 = new_ml_request 'POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" }
-    s0 = r0.serialized
-    p s0
 
+    # 1st fake a history in a file:
+    r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"less chickens" })
+    array_to_file( [ r0.yamld ], history_in_file='mlhistory.txt' )
+    adapter_dangerously_replace_history_from_stream( app, File.open( history_in_file) )
 
-    #darn. YAML puts \n after things; mucks up my file reading. need new ideas.
-
-
-    fn = 'mlhistory.txt' ; FileUtils.rm( fn ) if File.file?( fn )
-    File.open( fn, 'w') do |f|
-      f << s0
-      f << s0
-    end
-    history = File.open( fn )
-
-    app.dangerously_replace_history history
-
+    # see if that works:
     sending_expect "GET", '/0', {},
                    {
                        out_action:   "GET_named_page",
                        muffin_id:   0,
-                       muffin_body: "apple"
+                       muffin_body: "less chickens"
                    }
+
+    # then add to the history in the ordinary way, make sure that still works.
+    sending_expect 'POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"more chickens" } ,
+                     {
+                         out_action:   "GET_named_page",
+                         muffin_id:   1,
+                         muffin_body: "more chickens"
+                     }
+
+    # finally, add to the history using faked-up string / StringIO, see if that works:
+    history = app.dangerously_all_posts_yamld
+    r2 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"end of chickens" })
+    history_in_string = array_into_string ( history << r2.yamld )
+    adapter_dangerously_replace_history_from_stream( app, StringIO.new( history_in_string) )
 
     sending_expect "GET", '/1', {},
                    {
                        out_action:   "GET_named_page",
                        muffin_id:   1,
-                       muffin_body: "banana"
+                       muffin_body: "more chickens"
                    }
 
     sending_expect "GET", '/2', {},
                    {
-                       out_action:   "404"
+                       out_action:   "GET_named_page",
+                       muffin_id:   2,
+                       muffin_body: "end of chickens"
                    }
 
+    sending_expect "GET", '/3', {},
+                   {
+                       out_action:   "404"
+                   }
+    # if that all works, loading/unloading/faking history w arrays/strings/files work :-)
   end
 
 end
 
 
-def just_some_notes
-  require 'open-uri'
-  url = 'http://upload.wikimedia.org/wikipedia/commons/8/89/Robie_House.jpg'
-  file = Tempfile.new(['temp','.jpg'])
-  stringIo = open(url)
-  file.binmode
-  file.write stringIo.read
-end

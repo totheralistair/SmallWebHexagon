@@ -30,7 +30,7 @@ class Ml_RackRequest < Ml_request
     # better to do it now and save later surprises :-(
   end
 
-  def self.reconstitute_from serialized_request
+  def self.deyamld serialized_request
     rreq = YAML::load StringIO.new( serialized_request )
     rreq.env["rack.input"] = StringIO.new(  rreq.env["rack.input"]  )
     rreq.env["rack.errors"] = StringIO.new(  rreq.env["rack.errors"]  )
@@ -41,7 +41,7 @@ class Ml_RackRequest < Ml_request
     rreq
   end
 
-  def serialized
+  def yamld
     rack_input = @myRequest.env["rack.input"]
     rack_errors = @myRequest.env["rack.errors"]
     form_input = @myRequest.env["rack.request.form_input"]
@@ -56,6 +56,11 @@ class Ml_RackRequest < Ml_request
     @myRequest.env["rack.errors"] = rack_errors
     @myRequest.env["rack.request.form_input"] = form_input
     out
+  end
+
+  def clean_deyamld
+    y = self.yamld
+    Ml_RackRequest::deyamld(y)
   end
 
 
