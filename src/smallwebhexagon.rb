@@ -11,14 +11,15 @@ require_relative '../src/historian'
 class Smallwebhexagon
 # Smallwebhexagon knows global policies and environment, not histories and private things.
 
-  def initialize
-    @theHistorian = Historian.new # knows the history of requests
+  def initialize persister
+    @theHistorian = Historian.new persister # knows the history of requests
     @theBaker = Baker.new         # knows the muffins
+    @thePersister = persister
   end
 
 
   def dangerously_replace_history(requests)
-    initialize
+    initialize @thePersister
     requests.each {|r| handle r }
   end
 

@@ -6,14 +6,15 @@ require 'fileutils'
 require 'yaml'
 require_relative '../src/ml_request.rb'
 require 'stringio'
+require_relative '../test/utilities_for_tests'
 
 
 class TestRequests < Test::Unit::TestCase
 
-  def new_ml_request method, path, params={}
-    Ml_RackRequest.new  Rack::MockRequest.env_for( path, {:method => method, :params=>params} )
-  end
-
+  # def new_ml_request method, path, params={}
+  #   Ml_RackRequest.new  Rack::MockRequest.env_for( path, {:method => method, :params=>params} )
+  # end
+  #
 
   def test_01_requests_serialize_and_reconstitute_back_and_forth
 

@@ -1,6 +1,8 @@
 # Here is how to go through Rackup
 require './src/smallwebhexagon_via_rack'
-run Smallwebhexagon_via_rack.new("./src/views/")
+require './src/persisters'
+
+run Smallwebhexagon_via_rack.new( "./src/views/", Nul_persister.new )
 
 
 

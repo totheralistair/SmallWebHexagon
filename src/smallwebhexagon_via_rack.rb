@@ -8,9 +8,9 @@ class Smallwebhexagon_via_rack
 # Hex adapter to Smallwebhexagon using Rack for web-type I/O
 # is also tied to Erubis, which may need to be changed one day
 
-  def initialize( viewsFolder ) #ugh on passing viewsFolder in :(
+  def initialize( viewsFolder, persister )
     @viewsFolder = viewsFolder
-    @ml = Smallwebhexagon.new
+    @ml = Smallwebhexagon.new persister #not sure this belongs here
   end
 
 
