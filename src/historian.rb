@@ -17,7 +17,7 @@ class Historian
   def no_history_to_report?;  @thePosts.size == 0 ;  end
   def dangerously_all_posts ;  @thePosts ;  end  #yep, dangerous. remove eventually
   def dangerously_all_posts_yamld
-    out = Array.new
+    out = Array.new;
     @thePosts.each {|req| out << req.yamld }
     out
   end
