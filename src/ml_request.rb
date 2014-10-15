@@ -1,18 +1,25 @@
 require 'rack'
 require 'yaml'
 
-#===== class Ml_request =========================
-# a Rack::Request wrapper
-# # Ml_request defines the protocol for requests that
-# can be sent in to Smallwebhexagon.
-# Rack::Request to start with, but simpler ones for testing, possibly
 
-class Ml_request
-  #nothing implemented at this level yet.
+def yaml_my requests
+  out = Array.new
+  requests.each {|req| out << req.to_yaml }
+  out
+end
+
+def requests_from_yaml_stream(stream)
+  requests = YAML::load_documents( stream ) { |req|
+    req.clean_from_yaml
+  }
 end
 
 
-class Ml_RackRequest < Ml_request
+
+
+
+class Ml_RackRequest
+# a Rack::Request wrapper
 # Warning about Rack::Request, it has two semi-undocumented strange things
 # 1. three fields are StringIO, which do not serialize.
 #    I have to turn them into strings temporarily to serialize,

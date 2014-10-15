@@ -27,10 +27,6 @@ class Smallwebhexagon
     @theHistorian.dangerously_all_posts
   end
 
-  def dangerously_all_posts_yamld #array of yamld requests
-    # not sure this belongs inside the hexagon
-    @theHistorian.dangerously_all_posts_yamld
-  end
 
 #===== Visitor Edge of the Hexagon =====
 # invoke 'handle(request)' directly.

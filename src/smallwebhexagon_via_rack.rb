@@ -4,9 +4,10 @@ require_relative '../src/ml_request'
 require_relative '../src/html_from_templatefile'
 
 
-class Smallwebhexagon_via_rack
 # Hex adapter to Smallwebhexagon using Rack for web-type I/O
 # is also tied to Erubis, which may need to be changed one day
+
+class Smallwebhexagon_via_rack
 
   def initialize( hex_app, viewsFolder )
     @app = hex_app

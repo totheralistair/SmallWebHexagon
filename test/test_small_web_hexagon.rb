@@ -13,8 +13,6 @@ require_relative '../test/utilities_for_tests'
 class TestRequests < Test::Unit::TestCase
   attr_accessor :app
 
-  #------ the tests ---------
-
   def test_z_runs_via_Rack_adapter # just check hexagon integrity, not a data check
     p __method__
 
@@ -82,12 +80,7 @@ class TestRequests < Test::Unit::TestCase
     p __method__
 
     r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
-    y0 = r0.to_yaml
-
-    r1 = Ml_RackRequest::from_yaml( y0 )
-    y1 = r1.to_yaml
-
-    y0.should == y1
+    r0.to_yaml.should == Ml_RackRequest::from_yaml( r0.to_yaml ).to_yaml
   end
 
 
@@ -114,12 +107,13 @@ class TestRequests < Test::Unit::TestCase
 
     @app = Smallwebhexagon.new( Nul_persister.new )
 
-    # 1st fake a history in a file:
+    # 1st, fake a history in a file:
     r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"less chickens" })
-    array_to_file( [ r0.to_yaml ], history_in_file='mlhistory.txt' )
-    dangerously_replace_history_from_stream( app, File.open( history_in_file) )
+    array_out_to_file( [ r0.to_yaml ], history_in_file='mlhistory.txt' )
 
-    # see if that works:
+    # see if that reads OK:
+    requests = requests_from_yaml_stream2( File.open( history_in_file) )
+    app.dangerously_restart_with_history requests
     sending_expect "GET", '/0', {},
                    {
                        out_action:   "GET_named_page",
@@ -127,7 +121,7 @@ class TestRequests < Test::Unit::TestCase
                        muffin_body: "less chickens"
                    }
 
-    # then add to the history in the ordinary way, make sure that still works.
+    # then add to the history in the ordinary way
     sending_expect 'POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"more chickens" } ,
                      {
                          out_action:   "GET_named_page",
@@ -135,11 +129,14 @@ class TestRequests < Test::Unit::TestCase
                          muffin_body: "more chickens"
                      }
 
+    yamld_history = yaml_my app.dangerously_all_posts     # notice I didn't check it yet. lazy
+
     # finally, add to the history using faked-up string / StringIO, see if that works:
-    history = app.dangerously_all_posts_yamld
     r2 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"end of chickens" })
-    history_in_string = array_into_string ( history << r2.to_yaml )
-    dangerously_replace_history_from_stream( app, StringIO.new( history_in_string) )
+    history_in_string = array_out_to_string ( yamld_history << r2.to_yaml )
+
+    requests = requests_from_yaml_stream2( StringIO.new( history_in_string) )
+    app.dangerously_restart_with_history requests
 
     sending_expect "GET", '/1', {},
                    {
@@ -159,7 +156,7 @@ class TestRequests < Test::Unit::TestCase
                    {
                        out_action:   "404"
                    }
-    # if that all works, loading/unloading/faking history w arrays/strings/files work :-)
+    # if that all works, loading/unloading/faking history w arrays/strings/files all work :-)
   end
 
 end

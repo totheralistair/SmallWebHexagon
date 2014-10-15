@@ -38,12 +38,6 @@ class Baker
     @muffinTin = MuffinTin.new
   end
 
-  # def dangerously_new_muffintin
-  #   @muffinTin = MuffinTin.new
-  # end
-
-
-
   def muffin_at(id) ;  @muffinTin.at( id ) ;  end
   def is_legit?(id) ;  @muffinTin.is_legit?(id) ;  end
   def default_muffin_id ; @muffinTin.default_muffin_id ; end
@@ -58,8 +52,7 @@ class Baker
 
 
   def add_muffin_from_text( request ) # BAD. something wrong w this on Binary input
-    m = @muffinTin.add_raw( request.incoming_contents )
-    m
+    @muffinTin.add_raw( request.incoming_contents )
   end
 
 end

@@ -10,7 +10,6 @@ require_relative '../src/ml_request'
 require_relative '../src/persisters'
 require_relative '../test/utilities_for_tests'
 
-#------ utilities ---------
 
 def new_ml_request method, path, params={}
   Ml_RackRequest.new  Rack::MockRequest.env_for( path, {:method => method, :params=>params} )
@@ -37,38 +36,38 @@ end
 
 
 
-#===============
 
-def deyaml_requests_from_stream(stream)
-  requests = YAML::load_documents( stream ) { |req|
-    req.clean_from_yaml
-  }
-  # requests = YAML::load_documents( stream )
-  requests.each {|r| r.clean_from_yaml }
-end
 
-def prepare_for_file( fn )
+
+def remove_file  fn
   FileUtils.rm( fn ) if File.file?( fn )
 end
 
-def array_to_file( array_of_stuff, fn )
-  prepare_for_file( fn )
+def array_out_to_file( array_of_stuff, fn )
+  remove_file  fn
   # FileUtils.rm( fn ) if File.file?( fn )
   File.open( fn, 'w') do |f|
     array_of_stuff.each {|y| f<<y}
   end
 end
 
-def array_into_string( array_of_yamlds )
+def array_out_to_string( array_of_yamlds )
   array_of_yamlds.inject("") {|out, y| out << y}
 end
 
 
-def dangerously_replace_history_from_stream( app, stream )
-  requests = deyaml_requests_from_stream(stream)
+def requests_from_yaml_stream2( stream )
+  requests = requests_from_yaml_stream(stream)
   requests.each {|r| r.clean_from_yaml }
-  app.dangerously_restart_with_history requests
 end
+
+
+
+
+
+
+
+
 
 
 def request_via_rack_adapter_without_server( app, method, path, params={} ) # app should be Muffinland_via_rack
