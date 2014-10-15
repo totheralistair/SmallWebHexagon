@@ -40,8 +40,11 @@ end
 #===============
 
 def deyaml_requests_from_stream(stream)
-  requests = YAML::load_documents( stream )
-  requests.each {|r| r.clean_deyamld }
+  requests = YAML::load_documents( stream ) { |req|
+    req.clean_from_yaml
+  }
+  # requests = YAML::load_documents( stream )
+  requests.each {|r| r.clean_from_yaml }
 end
 
 def prepare_for_file( fn )
@@ -61,18 +64,10 @@ def array_into_string( array_of_yamlds )
 end
 
 
-def stream_match_yamlds( stream_of_yamlds, array_of_yamlds )
-  new_history =deyaml_requests_from_stream( stream_of_yamlds )
-  array_of_yamlds.each_with_index { |y, i|
-    new_history[i].yamld.should == y
-  }
-end
-
-
-def adapter_dangerously_replace_history_from_stream( app, stream )
+def dangerously_replace_history_from_stream( app, stream )
   requests = deyaml_requests_from_stream(stream)
-  requests.each {|r| r.clean_deyamld }
-  app.dangerously_replace_history requests
+  requests.each {|r| r.clean_from_yaml }
+  app.dangerously_restart_with_history requests
 end
 
 

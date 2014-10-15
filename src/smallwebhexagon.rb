@@ -18,7 +18,7 @@ class Smallwebhexagon
   end
 
 
-  def dangerously_replace_history(requests)
+  def dangerously_restart_with_history(requests)
     initialize @thePersister
     requests.each {|r| handle r }
   end

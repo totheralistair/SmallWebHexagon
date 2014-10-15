@@ -30,18 +30,18 @@ class Ml_RackRequest < Ml_request
     # better to do it now and save later surprises :-(
   end
 
-  def self.deyamld serialized_request
-    rreq = YAML::load StringIO.new( serialized_request )
-    rreq.env["rack.input"] = StringIO.new(  rreq.env["rack.input"]  )
-    rreq.env["rack.errors"] = StringIO.new(  rreq.env["rack.errors"]  )
+  def self.from_yaml yamld_request
+    real_request = YAML::load StringIO.new( yamld_request )
+    real_request.env["rack.input"] = StringIO.new(  real_request.env["rack.input"]  )
+    real_request.env["rack.errors"] = StringIO.new(  real_request.env["rack.errors"]  )
 
-    if rreq.env["rack.request.form_input"]
-      rreq.env["rack.request.form_input"] = StringIO.new(  rreq.env["rack.request.form_input"]  )
+    if real_request.env["rack.request.form_input"]
+      real_request.env["rack.request.form_input"] = StringIO.new(  real_request.env["rack.request.form_input"]  )
     end
-    rreq
+    real_request
   end
 
-  def yamld
+  def to_yaml
     rack_input = @myRequest.env["rack.input"]
     rack_errors = @myRequest.env["rack.errors"]
     form_input = @myRequest.env["rack.request.form_input"]
@@ -58,9 +58,8 @@ class Ml_RackRequest < Ml_request
     out
   end
 
-  def clean_deyamld
-    y = self.yamld
-    Ml_RackRequest::deyamld(y)
+  def clean_from_yaml # cleans up the Stringio fields inside Rack::Request
+    Ml_RackRequest::from_yaml( self.to_yaml)
   end
 
 

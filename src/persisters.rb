@@ -15,6 +15,6 @@ class File_persister
   end
 
   def handle_new_post p
-    File.open( @myFn, 'a') do |f| f << p.yamld end
+    File.open( @myFn, 'a') do |f| f << p.to_yaml end
   end
 end

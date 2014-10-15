@@ -2,7 +2,7 @@
 require './src/smallwebhexagon_via_rack'
 require './src/persisters'
 
-run Smallwebhexagon_via_rack.new( "./src/views/", Nul_persister.new )
+run Smallwebhexagon_via_rack.new(  Smallwebhexagon.new(Nul_persister.new),"./src/views/" )
 
 
 

@@ -18,7 +18,7 @@ class Historian
   def dangerously_all_posts ;  @thePosts ;  end  #yep, dangerous. remove eventually
   def dangerously_all_posts_yamld
     out = Array.new;
-    @thePosts.each {|req| out << req.yamld }
+    @thePosts.each {|req| out << req.to_yaml }
     out
   end
 

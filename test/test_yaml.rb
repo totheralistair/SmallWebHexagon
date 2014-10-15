@@ -19,10 +19,10 @@ class TestRequests < Test::Unit::TestCase
   def test_01_requests_serialize_and_reconstitute_back_and_forth
 
     r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"chickens" })
-    s0 = r0.yamld
+    s0 = r0.to_yaml
 
-    r1 = Ml_RackRequest::deyamld( s0 )
-    s1 = r1.yamld
+    r1 = Ml_RackRequest::from_yaml s0
+    s1 = r1.to_yaml
 
     s0.should == s1
   end
@@ -30,14 +30,14 @@ class TestRequests < Test::Unit::TestCase
 
 
   def test_02_reading_params_changes_serialization
-    #the new ml_request fixes the problem, so no workaround is needed
+    #the updated ml_request fixes the problem, so no workaround is needed
 
     r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"more chickens" })
-    s0 = r0.yamld
+    s0 = r0.to_yaml
 
-    whatever = r0.incoming_contents
+    blarging_read = r0.incoming_contents
 
-    s1 = r0.yamld
+    s1 = r0.to_yaml
     s1.should == s0   # does now, cuz of the fixed-up ml_request
 
   end
@@ -47,11 +47,11 @@ class TestRequests < Test::Unit::TestCase
 
     r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"less chickens" })
 
-    s0 = r0.yamld
+    s0 = r0.to_yaml
 
-    whatever = r0.incoming_contents
+    blarging_read = r0.incoming_contents
 
-    s1 = r0.yamld
+    s1 = r0.to_yaml
     s1.should == s0   # shouldn't have different behavior than test_02
   end
 
@@ -60,7 +60,7 @@ class TestRequests < Test::Unit::TestCase
   def test_04_can_serialize_to_file_and_to_stringio
     r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"less chickens" })
     r1 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"more chickens" })
-    yamls = [r0.yamld, r1.yamld]
+    yamls = [r0.to_yaml, r1.to_yaml]
 
     array_to_file( yamls,file_history='mlhistory.txt' )
     string_history = array_into_string( yamls )
@@ -84,15 +84,10 @@ def array_into_string( array_of_yamlds )
   array_of_yamlds.inject("") {|out, y| out << y}
 end
 
-
-def deyaml(stream)
-  YAML::load_documents( stream )
-end
-
 def stream_match_yamlds( stream_of_yamlds, array_of_yamlds )
-  new_history =deyaml( stream_of_yamlds )
-  array_of_yamlds.each_with_index { |y, i|
-    new_history[i].yamld.should == y
+  objects_from_yamls = YAML::load_documents  stream_of_yamlds
+  array_of_yamlds.each_with_index { |aYaml, i|
+    objects_from_yamls[i].to_yaml.should == aYaml
   }
 end
 
