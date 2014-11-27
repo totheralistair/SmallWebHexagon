@@ -4,7 +4,7 @@ myRequest: !ruby/object:Rack::Request
     rack.version:
     - 1
     - 2
-    rack.input: Add=Add&MuffinContents=less+chickens
+    rack.input: Add=Add&MuffinContents=a
     rack.errors: ''
     rack.multithread: true
     rack.multiprocess: true
@@ -17,25 +17,25 @@ myRequest: !ruby/object:Rack::Request
     rack.url_scheme: http
     HTTPS: 'off'
     SCRIPT_NAME: ''
-    CONTENT_LENGTH: '36'
+    CONTENT_LENGTH: '24'
     CONTENT_TYPE: application/x-www-form-urlencoded
     rack.request.query_string: ''
     rack.request.query_hash: {}
-    rack.request.form_input: Add=Add&MuffinContents=less+chickens
+    rack.request.form_input: Add=Add&MuffinContents=a
     rack.request.form_hash:
       Add: Add
-      MuffinContents: less chickens
-    rack.request.form_vars: Add=Add&MuffinContents=less+chickens
+      MuffinContents: a
+    rack.request.form_vars: Add=Add&MuffinContents=a
   params:
     Add: Add
-    MuffinContents: less chickens
+    MuffinContents: a
 --- !ruby/object:Ml_RackRequest
 myRequest: !ruby/object:Rack::Request
   env:
     rack.version:
     - 1
     - 2
-    rack.input: Add=Add&MuffinContents=more+chickens
+    rack.input: Add=Add&MuffinContents=b
     rack.errors: ''
     rack.multithread: true
     rack.multiprocess: true
@@ -48,15 +48,15 @@ myRequest: !ruby/object:Rack::Request
     rack.url_scheme: http
     HTTPS: 'off'
     SCRIPT_NAME: ''
-    CONTENT_LENGTH: '36'
+    CONTENT_LENGTH: '24'
     CONTENT_TYPE: application/x-www-form-urlencoded
     rack.request.query_string: ''
     rack.request.query_hash: {}
-    rack.request.form_input: Add=Add&MuffinContents=more+chickens
+    rack.request.form_input: Add=Add&MuffinContents=b
     rack.request.form_hash:
       Add: Add
-      MuffinContents: more chickens
-    rack.request.form_vars: Add=Add&MuffinContents=more+chickens
+      MuffinContents: b
+    rack.request.form_vars: Add=Add&MuffinContents=b
   params:
     Add: Add
-    MuffinContents: more chickens
+    MuffinContents: b

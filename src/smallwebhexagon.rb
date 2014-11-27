@@ -11,6 +11,36 @@ require_relative '../src/historian'
 class Smallwebhexagon
 # Smallwebhexagon knows global policies and environment, not histories and private things.
 
+
+  def self.new_with_adapters user_adapter, user_adapter_params, persistence_adapter
+    if user_adapter
+      hex = Smallwebhexagon.new  persistence_adapter.new
+      user_port = user_adapter.new  hex, user_adapter_params
+    else
+      hex = Smallwebhexagon.new  persistence_adapter.new
+    end
+  end
+
+  def self.new_with_persister  persistence_adapter
+    hex = Smallwebhexagon.new persistence_adapter
+  end
+
+  # ----- some tryout code just testing out the calling style ------
+  # don't so much like these following ones.
+  def self.user_adapter hex, a, params={}
+      a.new hex, params
+  end
+
+  def self.persistence_adapter hex, a
+    hex.persistence_adapter a
+  end
+
+  def persistence_adapter persister
+    @theHistorian = Historian.new persister # knows the history of requests
+  end
+  # ---- end test code ------------------------------
+
+
   def initialize persister
     @theHistorian = Historian.new persister # knows the history of requests
     @theBaker = Baker.new         # knows the muffins

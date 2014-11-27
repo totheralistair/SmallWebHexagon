@@ -41,10 +41,7 @@ class Baker
   def muffin_at(id) ;  @muffinTin.at( id ) ;  end
   def is_legit?(id) ;  @muffinTin.is_legit?(id) ;  end
   def default_muffin_id ; @muffinTin.default_muffin_id ; end
-
-  def aint_got_no_muffins_yo?
-    @muffinTin.empty?
-  end
+  def aint_got_no_muffins_yo? ;  @muffinTin.empty? ;  end
 
   def muffin_at_id( m_id )
     muffin_at(m_id) if is_legit?(m_id)

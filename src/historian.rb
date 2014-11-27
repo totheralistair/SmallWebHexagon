@@ -1,6 +1,3 @@
-require 'logger'
-require_relative '../src/baker'
-
 
 class Historian # knows the history of what has happened, all Posts
 

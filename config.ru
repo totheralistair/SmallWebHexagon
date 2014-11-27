@@ -2,7 +2,13 @@
 require './src/smallwebhexagon_via_rack'
 require './src/persisters'
 
-run Smallwebhexagon_via_rack.new(  Smallwebhexagon.new(Nul_persister.new),"./src/views/" )
+#run Smallwebhexagon_via_rack.new(  Smallwebhexagon.new(Nul_persister),"./src/views/" )
+
+viewsFolder = "./src/views/"
+app =   Smallwebhexagon.new_with_adapters(
+    Smallwebhexagon_via_rack, viewsFolder,
+    Nul_persister  )
+run app
 
 
 

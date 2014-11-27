@@ -18,7 +18,7 @@ class TestRequests < Test::Unit::TestCase
   def test_01_nul_persister_does_nothing_or_just_prints
     p __method__
 
-    @app = Smallwebhexagon.new( Nul_persister.new )
+    @app = Smallwebhexagon.new  Nul_persister.new
     r0 = new_ml_request "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" }
     app.handle r0
   end
@@ -27,7 +27,7 @@ class TestRequests < Test::Unit::TestCase
     p __method__
 
     out_fn = 'mlhistory.txt'
-    @app = Smallwebhexagon.new File_persister.new( out_fn )
+    @app = Smallwebhexagon.new File_persister.new  out_fn
 
     app.handle new_ml_request( "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" } )
     File.readlines(out_fn).should == File.readlines('mlhistory_reference1.txt')

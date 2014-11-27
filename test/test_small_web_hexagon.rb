@@ -1,12 +1,3 @@
-require 'rack/test'
-require 'rspec/expectations'
-require 'test/unit'
-require 'erubis'
-require 'fileutils'
-require 'yaml'
-require_relative '../src/smallwebhexagon.rb'
-require_relative '../src/smallwebhexagon_via_rack.rb'
-require_relative '../src/ml_request'
 require_relative '../test/utilities_for_tests'
 
 
@@ -17,7 +8,11 @@ class TestRequests < Test::Unit::TestCase
     p __method__
 
     viewsFolder = "../src/views/"
-    @app = Smallwebhexagon_via_rack.new( Smallwebhexagon.new( Nul_persister.new ), viewsFolder )
+
+
+    @app =   Smallwebhexagon.new_with_adapters(
+        Smallwebhexagon_via_rack, viewsFolder,
+        Nul_persister  )
 
     request_via_rack_adapter_without_server( app, "GET", '/a?b=c', "d=e").body.
         should == page_from_template( viewsFolder + "EmptyDB.erb" , binding )
@@ -27,7 +22,10 @@ class TestRequests < Test::Unit::TestCase
   def test_00_emptyDB_is_special_case
     p __method__
 
-    @app = Smallwebhexagon.new( Nul_persister.new )
+    @app =   Smallwebhexagon.new_with_adapters(
+        nil, nil,
+        Nul_persister  )
+
 
     sending_expect "GET", '/aaa', {} ,
                    {
@@ -39,7 +37,9 @@ class TestRequests < Test::Unit::TestCase
   def test_01_posts_return_contents
     p __method__
 
-    @app = Smallwebhexagon.new( Nul_persister.new )
+    @app =   Smallwebhexagon.new_with_adapters(
+        nil, nil,
+        Nul_persister  )
 
     sending_expect "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" },
                     {
@@ -88,7 +88,9 @@ class TestRequests < Test::Unit::TestCase
   def test_03_can_reload_history_from_array_and_continue
     p __method__
 
-    @app = Smallwebhexagon.new( Nul_persister.new )
+    @app =   Smallwebhexagon.new_with_adapters(
+        nil, nil,
+        Nul_persister  )
 
     r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
     app.dangerously_restart_with_history [ r0 ]
@@ -105,7 +107,9 @@ class TestRequests < Test::Unit::TestCase
   def test_04_can_run_history_to_from_strings_and_files
     p __method__
 
-    @app = Smallwebhexagon.new( Nul_persister.new )
+    @app =   Smallwebhexagon.new_with_adapters(
+        nil, nil,
+        Nul_persister  )
 
     # 1st, fake a history in a file:
     r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"less chickens" })
